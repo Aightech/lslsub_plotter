@@ -45,7 +45,7 @@ private:
     void init3DGraph();
     void init2DGraph();
 
-    void update3Dgraph();
+    void update3Dgraph(unsigned index);
     void update2Dgraph();
 
     Ui::MainWindow *ui;
@@ -59,6 +59,7 @@ private:
     std::vector<long> m_max_ranges;
     double m_current_time_stamp;
     double m_past_time_stamp;
+    std::vector<unsigned> m_chunk_size;
 
     std::vector<unsigned int> m_nb_channels;
 
