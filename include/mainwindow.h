@@ -57,6 +57,7 @@ private:
     std::vector<std::vector<double>> m_time_stamps;
     std::vector<long> m_min_ranges;
     std::vector<long> m_max_ranges;
+    std::vector<double> m_last_time_stamps;
     double m_current_time_stamp;
     double m_past_time_stamp;
     std::vector<unsigned> m_chunk_size;
