@@ -18,6 +18,11 @@
 #include <vector>
 #include <iostream>
 
+#pragma pack(1)
+typedef struct _data_sample {
+        short channel[408];
+} data_sample;
+
 
 namespace Ui {
 class MainWindow;
@@ -47,8 +52,14 @@ private:
     QTimer m_timer;
     std::vector<lsl::stream_inlet *> m_inlets;
 
-    unsigned int m_t=100;
+    unsigned int m_t[2];
     std::vector<unsigned int> m_time_spans;
+    std::vector<std::vector<double>> m_time_stamps;
+    std::vector<long> m_min_ranges;
+    std::vector<long> m_max_ranges;
+    double m_current_time_stamp;
+    double m_past_time_stamp;
+
     std::vector<unsigned int> m_nb_channels;
 
     std::vector<std::vector<std::vector<double>>> m_data;

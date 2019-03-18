@@ -7,8 +7,15 @@ QT       += core gui datavisualization charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = testVisualisation
+TARGET = lslsub_plotter
 TEMPLATE = app
+DESTDIR = bin
+#RCC_DIR = build
+#RESOURCES = build
+#RES_FILE = build
+#OBJECTS_DIR = build
+
+
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -35,15 +42,19 @@ HEADERS += \
 FORMS += \
     forms/mainwindow.ui
 
+
 unix:!macx: LIBS += \
-                    -L/home/aightech/Documents/epfl/OTBsoftware/testVisualisation/libraries \
+                    -L./lib \
+                    -Wl,-rpath,./lib \
                     -llsl64 \
                     -lboost_system\
                     -lboost_thread
 
+
+
+
 INCLUDEPATH += include/lsl
 DEPENDPATH += include/lsl
-DEPENDPATH += /libraries
 
 
 
@@ -52,5 +63,4 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-unix:!macx: LD_LIBRARY_PATH += libraries
 

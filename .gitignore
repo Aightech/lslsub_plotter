@@ -1,0 +1,9 @@
+*
+!.gitignore
+!bin
+!src
+!include
+!lib
+!forms
+!README.md
+!lslsub_plotter.pro

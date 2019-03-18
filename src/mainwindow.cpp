@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //init the timer object used to update the graph
     QObject::connect(&m_timer, &QTimer::timeout, this, &MainWindow::handleTimeout);
-    m_timer.setInterval(100);
+    m_timer.setInterval(1);
     m_timer.start();
 
 
@@ -31,12 +31,15 @@ MainWindow::MainWindow(QWidget *parent) :
     for(uint i =0; i < 2; i++)
     {
         m_nb_channels.push_back(8);
-        m_time_spans.push_back(30);
+        m_time_spans.push_back(400);
         std::vector<std::vector<double>> data;
         std::vector<double> v(m_nb_channels[i]);
         m_data.push_back(data);
         for(uint t =0; t < m_time_spans[i]; t++)
+        {
             m_data[i].push_back(v);
+            m_time_stamps[i].push_back(t*0.01);
+        }
     }
 
     init3DGraph();
@@ -119,8 +122,10 @@ void MainWindow::init3DGraph()
         m_chart3D[i]->setItemLabelVisible(false);
         //m_chart3D[i]->
         m_graph[i]->addSeries(m_chart3D[i]);
-        m_graph[i]->axisX()->setRange(-1, m_time_spans[i]);
-        m_graph[i]->axisY()->setRange(-5, 5);
+        m_graph[i]->axisX()->setRange(m_time_stamps[i][m_t[i]+m_time_spans[i]], m_time_stamps[i][m_time_spans[i]]);
+        m_min_ranges[i] = -1;
+        m_max_ranges[i] = 1;
+        m_graph[i]->axisY()->setRange(m_min_ranges[i], m_max_ranges[i]);
         m_graph[i]->axisZ()->setRange(-1, m_nb_channels[i]);
         m_graph[i]->axisX()->setLabelAutoRotation(30);
         m_graph[i]->axisY()->setLabelAutoRotation(90);
@@ -179,14 +184,45 @@ void MainWindow::handleTimeout()
     //if an lsl stream is connected
     for(uint i =0; i< m_inlets.size(); i++)
     {
-        std::vector<float> sample;
-        m_inlets[i]->pull_sample(sample);//get the sample
-        m_nb_channels[i] = static_cast<uint>(sample.size());
-        //store it in our data array
-        for(unsigned int n = 0 ; n < sample.size(); n++)
-            m_data[i][(m_t)%m_time_spans[i]][n] = static_cast<double>(sample[n]);
+        std::vector<std::vector<short>> chunk;
+        std::vector<double> time_stamps;
+        if(m_inlets[i]->pull_chunk(chunk,time_stamps))//get the sample
+        {
+            unsigned chunk_size = static_cast<unsigned>(chunk.size());
 
-        m_t++;
+            //if the number of channel has changed
+            if(m_nb_channels[i] != chunk[0].size())
+            {
+                m_nb_channels[i] = static_cast<uint>(chunk[0].size());
+                std::vector<std::vector<double>> data;
+                std::vector<double> v(m_nb_channels[i]);
+                m_data[i].clear();
+                for(uint t =0; t < m_time_spans[i]; t++)
+                    m_data[i].push_back(v);
+                m_t[i]=0;
+                m_graph[i]->axisX()->setRange(-1, m_time_spans[i]);
+                m_graph[i]->axisZ()->setRange(-1, m_nb_channels[i]);
+            }
+            //store it in our data array
+            for(unsigned int t = 0 ; t < chunk_size ; t++)
+            {
+                m_time_stamps[i][(m_t[i]+t)%m_time_spans[i]] = time_stamps[t];
+                for (unsigned n = 0; n < chunk[t].size();n++)
+                {
+                    double val = chunk[t][n];
+                    if(val < m_min_ranges[i])
+                        m_min_ranges[i] = static_cast<long>(val);
+                    if(val > m_max_ranges[i])
+                        m_max_ranges[i] = static_cast<long>(val);
+                    m_data[i][(m_t[i]+t)%m_time_spans[i]][n] = val;
+                }
+
+            }
+
+            m_graph[i]->axisY()->setRange(m_min_ranges[i], m_max_ranges[i]);
+
+            m_t[0]++;
+        }
     }
 
     //update the 3D graph
@@ -214,13 +250,13 @@ void MainWindow::update3Dgraph()
                 for (uint n = 0; n < m_nb_channels[i]; n++) {
                     //draw a point at the coresponding point
                     //the data  array is use as a roundrobin
-                    (*newRow)[static_cast<int>(n)].setPosition(QVector3D(t+m_t, static_cast<float>(m_data[i][((m_t)%m_time_spans[i]+t+1)%m_time_spans[i]][n]), n));
+                    (*newRow)[static_cast<int>(n)].setPosition(QVector3D(m_time_stamps[i][(m_t[i]+t)%m_time_spans[i]], static_cast<float>(m_data[i][(m_t[i]+t)%m_time_spans[i]][n]), n));
                 }
                 *dataArray << newRow;
             }
 
             //update the time window of the graph
-            m_graph[i]->axisX()->setRange(m_t-2, m_time_spans[i] + m_t+1);
+            m_graph[i]->axisX()->setRange(m_time_stamps[i][m_t[i]+m_time_spans[i]], m_time_stamps[i][m_time_spans[i]]);
             m_proxy_chart3D[i]->resetArray(dataArray);
         }
     }
@@ -229,7 +265,7 @@ void MainWindow::update3Dgraph()
 
 void MainWindow::update2Dgraph()
 {
-    for(uint i =0; i<2; i++)
+    /*for(uint i =0; i<2; i++)
     {
         if( ((i==0)?ui->checkBox_2D->isChecked():ui->checkBox_2D_2->isChecked()) )
         {
@@ -243,7 +279,7 @@ void MainWindow::update2Dgraph()
             }
             m_chart2D[i]->axes(Qt::Horizontal).first()->setRange(m_t-2, m_time_spans[i] + m_t+1);
         }
-    }
+    }*/
 }
 
 void MainWindow::change_stream(int index)
