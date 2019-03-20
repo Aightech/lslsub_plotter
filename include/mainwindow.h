@@ -39,38 +39,45 @@ public:
 private slots:
     void connect_stream();
     void change_stream(int);
+    void changeChannelsRange();
 
 private:
     void handleTimeout();
     void init3DGraph();
     void init2DGraph();
 
-    void update3Dgraph(unsigned index);
+    void update3Dgraph();
     void update2Dgraph();
+
+    void createDataArray();
+
 
     Ui::MainWindow *ui;
     QTimer m_timer;
-    std::vector<lsl::stream_inlet *> m_inlets;
+    lsl::stream_inlet* m_inlet=NULL;
 
-    unsigned int m_t[2];
-    std::vector<unsigned int> m_time_spans;
-    std::vector<std::vector<double>> m_time_stamps;
-    std::vector<long> m_min_ranges;
-    std::vector<long> m_max_ranges;
-    std::vector<double> m_last_time_stamps;
-    double m_current_time_stamp;
-    double m_past_time_stamp;
-    std::vector<unsigned> m_chunk_size;
+    unsigned int m_counter=0;
+    float m_Xmin=0;
+    float m_Xmax=1000;
+    int m_XnbSample=1000;//time span
 
-    std::vector<unsigned int> m_nb_channels;
+    float m_Ymin=-100;
+    float m_Ymax=100;
 
-    std::vector<std::vector<std::vector<double>>> m_data;
-    std::vector<std::vector<short>> m_samples_short;
+    float m_Zmin=0;
+    float m_Zmax=8;
+    int m_ZnbSample=8;//nb channels
 
-    std::vector<QtDataVisualization::Q3DSurface*> m_graph;
-    std::vector<QtCharts::QChart *> m_chart2D;
-    std::vector<QtDataVisualization::QSurface3DSeries*> m_chart3D;
-    std::vector<QtDataVisualization::QSurfaceDataProxy*> m_proxy_chart3D;
+    unsigned m_chunk_size;
+    unsigned m_mean_span = 100;
+
+
+    std::vector<std::vector<float>> m_data;
+
+    QtDataVisualization::Q3DSurface* m_graph;
+    QtCharts::QChart * m_chart2D;
+    QtDataVisualization::QSurface3DSeries* m_chart3D;
+    QtDataVisualization::QSurfaceDataProxy* m_proxy_chart3D;
 
 
 };
