@@ -10,13 +10,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ui->comboBox_stream->addItem("LSL Stream", 0);
-    ui->comboBox_stream->addItem("IP Stream", 1);
-    ui->comboBox_stream->addItem("Serial Stream", 2);
-    //setup the objects to connect the lsl layer (button + line edit)
     ui->lineEdi_stream->setText("OTB");
     ui->spinBox_channelMin->setValue(m_Zmin);
     ui->spinBox_channelMax->setValue(m_Zmax);
-
     ui->label_nb_channels->setNum(m_ZnbSample);
     ui->label_rangeY->setText("[ "+QString::number(m_Ymin) +" ; "+QString::number(m_Ymax) +"] ");
 
@@ -24,8 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->comboBox_stream, SIGNAL (currentIndexChanged(int)), this, SLOT(change_stream(int)));
     connect(ui->spinBox_channelMin, SIGNAL (valueChanged(int)), this, SLOT(changeChannelsRange()));
     connect(ui->spinBox_channelMax, SIGNAL (valueChanged(int)), this, SLOT(changeChannelsRange()));
-
-    ui->checkBox_3D->setChecked(true);
+    connect(ui->radioButton_3Dheatmap, SIGNAL (clicked()), this, SLOT(changeHeatMapRange()));
+    connect(ui->pushButton_scanStream, SIGNAL (released()), this, SLOT(scanStream()));
 
     //init the timer object used to update the graph
     QObject::connect(&m_timer, &QTimer::timeout, this, &MainWindow::handleTimeout);
@@ -33,11 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_timer.start();
 
     createDataArray();
-
     init3DGraph();
     init2DGraph();
-
-
 
     // Set the colors from the light theme as default ones
     QPalette pal = qApp->palette();
@@ -52,8 +45,6 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::init2DGraph()
 {
     m_chart2D = new QtCharts::QChart();
-    //chart->setTitle("Line chart");
-
     //store the m_data to a graphic object
     for (uint i = 0 ; i < m_ZnbSample; i++)
     {
@@ -78,10 +69,6 @@ void MainWindow::init2DGraph()
     chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     chartView->chart()->legend()->hide();
     ui->horizontalLayout_2D->addWidget(chartView);
-
-
-
-
 }
 
 void MainWindow::init3DGraph()
@@ -105,8 +92,6 @@ void MainWindow::init3DGraph()
 
     m_proxy_chart3D = new QtDataVisualization::QSurfaceDataProxy();
     m_proxy_chart3D->resetArray(dataArray);
-
-
 
     //set up the graph and the chart
     m_chart3D = new QtDataVisualization::QSurface3DSeries(m_proxy_chart3D);
@@ -151,22 +136,12 @@ void MainWindow::connect_stream()
     ui->lineEdi_stream->setDisabled(true);
     ui->comboBox_stream->setDisabled(true);
 
-    if(ui->comboBox_stream->currentIndex()==0)
-    {//LSL stream
-        std::string stream_label = ui->lineEdi_stream->text().toStdString();
-        std::cout << "Trying to connect to \"" << stream_label << "\""<< std::endl;
-        std::vector<lsl::stream_info> results = lsl::resolve_stream("name",stream_label);
-        m_inlet = new lsl::stream_inlet(results[0]);
-    }
-    if(ui->comboBox_stream->currentIndex()==1)
-    {// TODO IP stream
-        //std::string host = ui->lineEdi_stream->text().toStdString();
-        // m_otb_client.connect(host);
-        // m_otb_client.start();
-    }
-    if(ui->comboBox_stream->currentIndex()==2)
-    {// TODO Serial stream
-    }
+//    if(ui->comboBox_stream->currentIndex()==0)
+
+    std::string stream_label = ui->lineEdi_stream->text().toStdString();
+    std::cout << "Trying to connect to \"" << stream_label << "\""<< std::endl;
+    std::vector<lsl::stream_info> results = lsl::resolve_stream("name",stream_label);
+    m_inlet = new lsl::stream_inlet(results[0]);
 
 
 }
@@ -182,21 +157,19 @@ void MainWindow::handleTimeout()
         if(m_inlet->pull_chunk(chunk,time_stamps))//get the sample
         {
             m_chunk_size = chunk.size();
-           // std::cout << "m_chunk_size : " << m_chunk_size << std::endl;
             if(m_chunk_size/m_mean_span > m_XnbSample)
                 std::cout << "warning data overflow" << std::endl;
-            //if the number of channel has changed
+            //if the number of channels has changed
             if(m_ZnbSample != chunk[0].size())
             {
                 m_ZnbSample = chunk[0].size();
-                //std::cout << chunk[0].size() << std::endl;
                 m_Zmax = m_ZnbSample;
                 createDataArray();
                 m_counter = 0;
-                m_graph->axisZ()->setRange(m_Zmin, m_Zmax);
                 ui->spinBox_channelMax->setValue(m_Zmax);
             }
 
+            //average the data and store it
             int m = 0;
             int i = m_counter%m_XnbSample;
             std::vector<short> sample(chunk[0].size());//mean sample vector
@@ -206,7 +179,7 @@ void MainWindow::handleTimeout()
                     sample[n] += chunk[t][n];
                 m++;
 
-                if(m%m_mean_span==0)
+                if(m%m_mean_span==0)//if enoight data was summed then divide to obtain the mean
                 {
                     for(int n = 0; n < chunk[t].size(); n++)
                     {
@@ -220,25 +193,24 @@ void MainWindow::handleTimeout()
                         sample[n]=0;
                     }
                     m = 0;
-                    i++;
-                    i = i%m_XnbSample;
-                    std::cout << " i: " << i << std::endl;
+                    i = (++i)%m_XnbSample;
                 }
             }
-            if(m!=0)
+            if(m!=0)//if the number of data received was not a multiple of the mean span
             {
                 for(int n = 0; n < chunk[0].size(); n++)
                     m_data[n][i] = sample[n]/m;
                 i++;
                 i = i%m_XnbSample;
             }
-            m_counter =i;
-            m_graph->axisY()->setRange(m_Ymin, m_Ymax);
+            m_counter =i;//increment the counter of the number of new data sampled
+            m_graph->axisY()->setRange(m_Ymin, m_Ymax);//reajust the Y ranges
             m_chart2D->axes(Qt::Vertical).first()->setRange(m_Ymin, m_Ymax);
-
 
             update3Dgraph();
             update2Dgraph();
+
+            //update stream info
             ui->label_nb_channels->setNum(m_ZnbSample);
             ui->label_rangeY->setText("[ "+QString::number(m_Ymin) +" ; "+QString::number(m_Ymax) +"] ");
         }
@@ -260,28 +232,66 @@ void MainWindow::createDataArray()
 
 void MainWindow::update3Dgraph()
 {
-    if(ui->checkBox_3D->checkState())
+    if(ui->groupBox_3D->isChecked())
     {
-        QtDataVisualization::QSurfaceDataArray *dataArray = new QtDataVisualization::QSurfaceDataArray;
-        dataArray->reserve(m_ZnbSample);
-        for (int i = m_Zmin; i < m_Zmax; i++)
+        if(ui->radioButton_3Dtemporal->isChecked())
         {
-            QtDataVisualization::QSurfaceDataRow *newRow = new QtDataVisualization::QSurfaceDataRow(m_XnbSample);//static_cast<int>(m_channels_max_ranges[i]-m_channels_min_ranges[i]));
-            int index =0;
-            float z = (i>m_Zmax)?m_Zmax:(i<m_Zmin)?m_Zmin:i;
-            for (int j = 0 ; j < m_XnbSample ; j++)
+
+            m_graph->axisZ()->setRange(m_Zmin, m_Zmax);
+            QtDataVisualization::QSurfaceDataArray *dataArray = new QtDataVisualization::QSurfaceDataArray;
+            dataArray->reserve(m_ZnbSample);
+            for (int i = m_Zmin; i < m_Zmax; i++)
             {
-                int rrb = (j+m_counter)%m_XnbSample;
-                float x = (j>m_Xmax)?m_Xmax:(j<m_Xmin)?m_Xmin:j;
-                float y = m_data[i][rrb] ;//+ (i==1&&j==3)?m_counter%50:0;
-                y = (y>m_Ymax)?m_Ymax:(y<m_Ymin)?m_Ymin:y;
-                (*newRow)[index++].setPosition(QVector3D(x, y, z));
+                QtDataVisualization::QSurfaceDataRow *newRow = new QtDataVisualization::QSurfaceDataRow(m_XnbSample);//static_cast<int>(m_channels_max_ranges[i]-m_channels_min_ranges[i]));
+                int index =0;
+                float z = (i>m_Zmax)?m_Zmax:(i<m_Zmin)?m_Zmin:i;
+                for (int j = 0 ; j < m_XnbSample ; j++)
+                {
+                    int rrb = (j+m_counter)%m_XnbSample;
+                    float x = (j>m_Xmax)?m_Xmax:(j<m_Xmin)?m_Xmin:j;
+                    float y = m_data[i][rrb] ;//+ (i==1&&j==3)?m_counter%50:0;
+                    y = (y>m_Ymax)?m_Ymax:(y<m_Ymin)?m_Ymin:y;
+                    (*newRow)[index++].setPosition(QVector3D(x, y, z));
+                }
+                *dataArray << newRow;
             }
-            *dataArray << newRow;
+
+            //m_proxy_chart3D = new QtDataVisualization::QSurfaceDataProxy();
+            m_proxy_chart3D->resetArray(dataArray);
+        }
+        else
+        {
+            QtDataVisualization::QSurfaceDataArray *dataArray = new QtDataVisualization::QSurfaceDataArray;
+            int chmin=ui->spinBox_heatmapChmin->value();
+            int chmax=ui->spinBox_heatmapChmax->value();
+            int zwidth=ui->spinBox_heatmapZWidthSize->value();
+            int xwidth=(chmax-chmin)/zwidth;
+            m_graph->axisZ()->setRange(0, zwidth);
+            m_graph->axisX()->setRange(0, xwidth);
+
+            int rrb = (m_counter-1)%m_XnbSample;
+
+            dataArray->reserve(zwidth);
+            for (int i = 0; i < zwidth; i++)
+            {
+                QtDataVisualization::QSurfaceDataRow *newRow = new QtDataVisualization::QSurfaceDataRow(xwidth);//static_cast<int>(m_channels_max_ranges[i]-m_channels_min_ranges[i]));
+                int index =0;
+                float z = (i>zwidth)?zwidth:(i<0)?0:i;
+                for (int j = 0 ; j < xwidth ; j++)
+                {
+                    int k = chmin + i*xwidth + j;
+                    float x = (j>xwidth)?xwidth:(j<0)?0:j;
+                    float y = m_data[k][rrb];//+ (i==1&&j==3)?m_counter%50:0;
+                    y = (y>m_Ymax)?m_Ymax:(y<m_Ymin)?m_Ymin:y;
+                    (*newRow)[index++].setPosition(QVector3D(x, y, z));
+                }
+                *dataArray << newRow;
+            }
+
+            //m_proxy_chart3D = new QtDataVisualization::QSurfaceDataProxy();
+            m_proxy_chart3D->resetArray(dataArray);
         }
 
-        //m_proxy_chart3D = new QtDataVisualization::QSurfaceDataProxy();
-        m_proxy_chart3D->resetArray(dataArray);
     }
 
 }
@@ -289,7 +299,7 @@ void MainWindow::update3Dgraph()
 
 void MainWindow::update2Dgraph()
 {
-    if(ui->checkBox_2D->isChecked())
+    if(ui->groupBox_2D->isChecked())
     {
         m_chart2D->removeAllSeries();
         //store the m_data to a graphic object
@@ -332,26 +342,18 @@ void MainWindow::update2Dgraph()
 
 void MainWindow::change_stream(int index)
 {
-    if(index == 0)
-    {// Stream
-        ui->lineEdi_stream->setPlaceholderText("LSL Stream Label");
-        ui->lineEdi_stream->setText("");
+    if(index>-1)
+    {
+        std::cout << index << std::endl;
+        ui->lineEdi_stream->setText(ui->comboBox_stream->currentText());
         ui->lineEdit_stream_port->setText("");
         ui->lineEdit_stream_port->setPlaceholderText("None");
+        ui->label_type->setText(QString::fromStdString(m_results[index].type()));
+        ui->label_nb_ch->setNum(m_results[index].channel_count());
+        ui->label_format->setText(QString::fromStdString(channel_format_str[m_results[index].channel_format()]));
+        ui->label_host->setText(QString::fromStdString(m_results[index].hostname()));
     }
-    else if(index == 1 )
-    {// Stream
-        ui->lineEdi_stream->setPlaceholderText("IP address hosting OTB software. Ex: localhost");
-        ui->lineEdi_stream->setText("");
-        ui->lineEdit_stream_port->setText("31000");
-    }
-    else if(index == 2)
-    {// Stream
-        ui->lineEdi_stream->setPlaceholderText("Serial Port Name");
-        ui->lineEdi_stream->setText("");
-        ui->lineEdit_stream_port->setText("");
-        ui->lineEdit_stream_port->setPlaceholderText("None");
-    }
+
 }
 
 void MainWindow::changeChannelsRange()
@@ -359,6 +361,38 @@ void MainWindow::changeChannelsRange()
     m_Zmax = ui->spinBox_channelMax->value();
     m_Zmin = ui->spinBox_channelMin->value();
     m_graph->axisZ()->setRange(m_Zmin, m_Zmax);
+}
+
+void MainWindow::changeHeatMapRange()
+{
+    ui->spinBox_heatmapChmin->setValue(0);
+    ui->spinBox_heatmapChmax->setValue(m_ZnbSample);
+    int w = static_cast<int>(sqrt(m_ZnbSample));
+    if(m_ZnbSample%w==0)
+        ui->spinBox_heatmapZWidthSize->setValue(w);
+    else {
+        while(m_ZnbSample%w!=0){w++;}
+        ui->spinBox_heatmapZWidthSize->setValue(w);
+    }
+}
+
+void MainWindow::scanStream()
+{
+    m_results = lsl::resolve_streams();
+    if(m_results.size()>0)
+     {
+         ui->label_type->setText(QString::fromStdString(m_results[0].type()));
+         ui->label_nb_ch->setNum(m_results[0].channel_count());
+         ui->label_format->setText(QString::fromStdString(channel_format_str[m_results[0].channel_format()]));
+         ui->label_host->setText(QString::fromStdString(m_results[0].hostname()));
+     }
+
+    ui->comboBox_stream->clear();
+    int i=0;
+    for (auto& stream: m_results)
+        ui->comboBox_stream->addItem( QString::fromStdString(stream.name()), i++);
+
+
 }
 
 MainWindow::~MainWindow()

@@ -40,6 +40,8 @@ private slots:
     void connect_stream();
     void change_stream(int);
     void changeChannelsRange();
+    void changeHeatMapRange();
+    void scanStream();
 
 private:
     void handleTimeout();
@@ -55,6 +57,17 @@ private:
     Ui::MainWindow *ui;
     QTimer m_timer;
     lsl::stream_inlet* m_inlet=NULL;
+    std::vector<lsl::stream_info> m_results;
+    std::string channel_format_str[9] { "none",
+            "cf_float32",
+            "cf_double64",
+            "cf_string",
+            "cf_int32",
+            "cf_int16",
+            "cf_int8",
+            "cf_int64",
+            "cf_undefined"     // Can not be transmitted.
+           };
 
     unsigned int m_counter=0;
     float m_Xmin=0;
@@ -65,8 +78,8 @@ private:
     float m_Ymax=100;
 
     float m_Zmin=0;
-    float m_Zmax=8;
-    int m_ZnbSample=8;//nb channels
+    float m_Zmax=408;
+    int m_ZnbSample=408;//nb channels
 
     unsigned m_chunk_size;
     unsigned m_mean_span = 100;
@@ -81,5 +94,7 @@ private:
 
 
 };
+
+
 
 #endif // MAINWINDOW_H

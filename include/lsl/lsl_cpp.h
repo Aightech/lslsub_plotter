@@ -64,6 +64,8 @@ namespace lsl {
                             // Also, some builds of liblsl will not be able to send or receive data of this type.
         cf_undefined = 0    // Can not be transmitted.
     };
+    
+    
 
 	/**
 	* Post-processing options for stream inlets. 
