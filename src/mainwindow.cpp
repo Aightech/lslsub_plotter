@@ -23,17 +23,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->treeWidget_streams->setHeaderLabels(QStringList() << tr("Streams")<< tr("Infos"));
 
     connect(ui->pushButton_connect_stream, SIGNAL (released()), this, SLOT (connect_stream()));
-    connect(ui->comboBox_stream, SIGNAL (currentIndexChanged(int)), this, SLOT(change_stream(int)));
-    connect(ui->spinBox_channelMin, SIGNAL (valueChanged(int)), this, SLOT(changeChannelsRange()));
-    connect(ui->spinBox_channelMax, SIGNAL (valueChanged(int)), this, SLOT(changeChannelsRange()));
+    connect(ui->comboBox_stream, SIGNAL (currentIndexChanged(int)), this, SLOT (change_stream(int)));
+    connect(ui->spinBox_channelMin, SIGNAL (valueChanged(int)), this, SLOT (changeChannelsRange()));
+    connect(ui->spinBox_channelMax, SIGNAL (valueChanged(int)), this, SLOT (changeChannelsRange()));
 
-    connect(ui->radioButton_3Dheatmap, SIGNAL (clicked()), this, SLOT(changeHeatMapRange()));
-    connect(ui->radioButton_3Dheatmap, SIGNAL (clicked()), this, SLOT(updateGUI()));
-    connect(ui->radioButton_3Dtemporal, SIGNAL (clicked()), this, SLOT(updateGUI()));
-    connect(ui->groupBox_3D, SIGNAL (clicked()), this, SLOT(updateGUI()));
-    connect(ui->groupBox_2D, SIGNAL (clicked()), this, SLOT(updateGUI()));
-    connect(ui->radioButton_all, SIGNAL (clicked()), this, SLOT(updateGUI()));
-    connect(ui->radioButton_solo, SIGNAL (clicked()), this, SLOT(updateGUI()));
+    connect(ui->radioButton_3Dheatmap, SIGNAL (clicked()), this, SLOT (changeHeatMapRange()));
+    connect(ui->radioButton_3Dheatmap, SIGNAL (clicked()), this, SLOT (updateGUI()));
+    connect(ui->radioButton_3Dtemporal, SIGNAL (clicked()), this, SLOT (updateGUI()));
+    connect(ui->groupBox_3D, SIGNAL (clicked()), this, SLOT (updateGUI()));
+    connect(ui->groupBox_2D, SIGNAL (clicked()), this, SLOT (updateGUI()));
+    connect(ui->radioButton_all, SIGNAL (clicked()), this, SLOT (updateGUI()));
+    connect(ui->radioButton_solo, SIGNAL (clicked()), this, SLOT (updateGUI()));
 
     connect(ui->pushButton_scanStream, SIGNAL (released()), this, SLOT(scanStream()));
     connect(ui->treeWidget_streams, SIGNAL(itemClicked(QTreeWidgetItem *, int)), SLOT(updateGUI()) );
@@ -347,11 +347,11 @@ void MainWindow::update3Dgraph(int index)
 
 void MainWindow::update2Dgraph(int index)
 {
-    if(m_stream3Dstate[index])
+    if(m_stream2Dstate[index])
     {
         m_chart2D[index]->removeAllSeries();
         //store the m_data to a graphic object
-        if(m_stream3Dstate[index]==1)
+        if(m_stream2Dstate[index]==1)
         {
             for (uint i = 0 ; i < m_ZnbSample[index]; i++)
             {
@@ -407,9 +407,16 @@ void MainWindow::change_stream(int index)
 int MainWindow::selectedStream()
 {
     int index = -1;
-    for(int i = 0; i < m_inlet.size(); i++)
-        if(!QString::compare(ui->treeWidget_streams->currentItem()->text(0),QString::fromStdString(m_inlet[i]->info().name())))
-            index=i;
+    if(ui->treeWidget_streams->currentItem())
+    {
+        for(int i = 0; i < m_inlet.size(); i++)
+            if(!QString::compare(ui->treeWidget_streams->currentItem()->text(0),QString::fromStdString(m_inlet[i]->info().name())))
+                index=i;
+    }
+    else
+    {
+        std::cout << "please select a stream" << std::endl;
+    }
     return  index;
 }
 
@@ -432,12 +439,13 @@ void MainWindow::changeHeatMapRange()
         ui->spinBox_heatmapChmin->setValue(0);
         ui->spinBox_heatmapChmax->setValue(m_ZnbSample[index]);
         int w = static_cast<int>(sqrt(m_ZnbSample[index]));
-        if(m_ZnbSample[index]%w==0)
+        if(m_ZnbSample[index]%w==0 && w != 0)
             ui->spinBox_heatmapZWidthSize->setValue(w);
         else {
-            while(m_ZnbSample[index]%w!=0){w++;}
+            while(m_ZnbSample[index]%++w!=0);
             ui->spinBox_heatmapZWidthSize->setValue(w);
         }
+
     }
 }
 
