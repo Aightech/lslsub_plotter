@@ -13,6 +13,7 @@
 #include <Q3DSurface>
 #include <QMainWindow>
 #include <QtCore/QTimer>
+#include <qtreewidget.h>
 
 #include <lsl_cpp.h>
 #include <vector>
@@ -42,21 +43,30 @@ private slots:
     void changeChannelsRange();
     void changeHeatMapRange();
     void scanStream();
+    void changeXnbSample();
+    void changeMeanSpan();
+    void updateGUI();
 
 private:
     void handleTimeout();
     void init3DGraph();
-    void init2DGraph();
 
-    void update3Dgraph();
-    void update2Dgraph();
 
-    void createDataArray();
+    void update3Dgraph(int);
+    void update2Dgraph(int);
+
+    void initDataArray(int);
+    void createDataArray(int);
+    void create3Dgraph(int index, std::string name);
+    void create2Dgraph(int index, std::string name);
+
+    int selectedStream();
 
 
     Ui::MainWindow *ui;
     QTimer m_timer;
-    lsl::stream_inlet* m_inlet=NULL;
+    int m_stream_count=0;
+    std::vector<lsl::stream_inlet*> m_inlet;
     std::vector<lsl::stream_info> m_results;
     std::string channel_format_str[9] { "none",
             "cf_float32",
@@ -69,28 +79,31 @@ private:
             "cf_undefined"     // Can not be transmitted.
            };
 
-    unsigned int m_counter=0;
-    float m_Xmin=0;
-    float m_Xmax=1000;
-    int m_XnbSample=1000;//time span
+    std::vector<unsigned int> m_counter;
+    std::vector<float> m_Xmin;
+    std::vector<float> m_Xmax;
+    std::vector<int> m_XnbSample;//time span
 
-    float m_Ymin=-100;
-    float m_Ymax=100;
+    std::vector<float> m_Ymin;
+    std::vector<float> m_Ymax;
 
-    float m_Zmin=0;
-    float m_Zmax=408;
-    int m_ZnbSample=408;//nb channels
+    std::vector<float> m_Zmin;
+    std::vector<float> m_Zmax;
+    std::vector<int> m_ZnbSample;//nb channels
 
-    unsigned m_chunk_size;
-    unsigned m_mean_span = 100;
+    std::vector<unsigned> m_chunk_size;
+    std::vector<unsigned> m_mean_span;
+
+    std::vector<unsigned> m_stream3Dstate;
+    std::vector<unsigned> m_stream2Dstate;
 
 
-    std::vector<std::vector<float>> m_data;
+    std::vector<std::vector<std::vector<float>>> m_data;
 
-    QtDataVisualization::Q3DSurface* m_graph;
-    QtCharts::QChart * m_chart2D;
-    QtDataVisualization::QSurface3DSeries* m_chart3D;
-    QtDataVisualization::QSurfaceDataProxy* m_proxy_chart3D;
+    std::vector<QtDataVisualization::Q3DSurface*> m_graph;
+    std::vector<QtCharts::QChart *> m_chart2D;
+    std::vector<QtDataVisualization::QSurface3DSeries*> m_chart3D;
+    std::vector<QtDataVisualization::QSurfaceDataProxy*> m_proxy_chart3D;
 
 
 };

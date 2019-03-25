@@ -9,7 +9,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = lslsub_plotter
 TEMPLATE = app
-DESTDIR = bin
+#DESTDIR = bin
 #RCC_DIR = build
 #RESOURCES = build
 #RES_FILE = build
@@ -42,15 +42,16 @@ HEADERS += \
 FORMS += \
     forms/mainwindow.ui
 
+LIBS += -L./lib
 
 unix:!macx: LIBS += \
-                    -L./lib \
                     -Wl,-rpath,./lib \
                     -llsl64 \
                     -lboost_system\
                     -lboost_thread
 
 
+win32: LIBS +=  -lliblsl32
 
 
 INCLUDEPATH += include/lsl
