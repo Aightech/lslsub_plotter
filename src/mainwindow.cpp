@@ -27,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_scanStream, SIGNAL (released()), this, SLOT(scanStream()));
     connect(ui->treeWidget_streams, SIGNAL(itemClicked(QTreeWidgetItem *, int)), SLOT(updateGUI()) );
 
-    //init the timer object used to update the graph
+    connect(ui->horizontalSlider_mean_span, SIGNAL (valueChanged(int)), this, SLOT(changeMeanSpan()));
+        //init the timer object used to update the graph
     QObject::connect(&m_timer, &QTimer::timeout, this, &MainWindow::handleTimeout);
     m_timer.setInterval(50);
     m_timer.start();
@@ -577,14 +578,18 @@ void MainWindow::updateGUI()
             m_stream2Dstate[ind]=0;
 
         ui->horizontalSlider_mean_span->setValue(static_cast<int>(m_mean_span[ind]));
+        ui->label_meanSpan->setNum(static_cast<int>(m_mean_span[ind]));
         changeHeatMapRange();
     }
-    for(unsigned i = 0 ; i < static_cast<unsigned>(ui->treeWidget_streams->topLevelItemCount()); i++)
+    if(m_stream_count>-1)
     {
-        for (unsigned c=0;c < static_cast<unsigned>(ui->treeWidget_streams->topLevelItem(static_cast<int>(i))->child(1)->childCount()) ;c++)
+        for(unsigned i = 0 ; i < static_cast<unsigned>(ui->treeWidget_streams->topLevelItemCount()); i++)
         {
-            int ind = StreamsIndex(ui->treeWidget_streams->topLevelItem(static_cast<int>(i))->text(0));
-            m_channelIsValid[i][c] = static_cast<bool>(ui->treeWidget_streams->topLevelItem(ind)->child(1)->child(static_cast<int>(c))->checkState(1));
+            for (unsigned c=0;c < static_cast<unsigned>(ui->treeWidget_streams->topLevelItem(static_cast<int>(i))->child(1)->childCount()) ;c++)
+            {
+                int ind = StreamsIndex(ui->treeWidget_streams->topLevelItem(static_cast<int>(i))->text(0));
+                m_channelIsValid[i][c] = static_cast<bool>(ui->treeWidget_streams->topLevelItem(ind)->child(1)->child(static_cast<int>(c))->checkState(1));
+            }
         }
     }
 }
