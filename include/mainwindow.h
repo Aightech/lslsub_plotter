@@ -19,10 +19,6 @@
 #include <vector>
 #include <iostream>
 
-#pragma pack(1)
-typedef struct _data_sample {
-        short channel[408];
-} data_sample;
 
 
 namespace Ui {
@@ -52,20 +48,24 @@ private:
     void init3DGraph();
 
 
-    void update3Dgraph(int);
-    void update2Dgraph(int);
+    void update3Dgraph(unsigned);
+    void update2Dgraph(unsigned);
 
-    void initDataArray(int);
-    void createDataArray(int);
-    void create3Dgraph(int index, std::string name);
-    void create2Dgraph(int index, std::string name);
+    void initDataArray(unsigned);
+    void createDataArray(unsigned);
+    void create3Dgraph(unsigned index, std::string name);
+    void create2Dgraph(unsigned index, std::string name);
 
-    int selectedStream();
+    bool isStreamsTicked(std::string name);
+    int StreamsIndex(QString name);
+    void storeChunk_int16(unsigned index);
+    void storeChunk_float(unsigned index);
 
 
     Ui::MainWindow *ui;
     QTimer m_timer;
-    int m_stream_count=0;
+    unsigned m_stream_count=0;
+    int m_selectedStream=-1;
     std::vector<lsl::stream_inlet*> m_inlet;
     std::vector<lsl::stream_info> m_results;
     std::string channel_format_str[9] { "none",
@@ -80,25 +80,27 @@ private:
            };
 
     std::vector<unsigned int> m_counter;
-    std::vector<float> m_Xmin;
-    std::vector<float> m_Xmax;
-    std::vector<int> m_XnbSample;//time span
+    std::vector<double> m_Xmin;
+    std::vector<double> m_Xmax;
+    std::vector<unsigned> m_XnbSample;//time span
 
-    std::vector<float> m_Ymin;
-    std::vector<float> m_Ymax;
+    std::vector<double> m_Ymin;
+    std::vector<double> m_Ymax;
 
-    std::vector<float> m_Zmin;
-    std::vector<float> m_Zmax;
-    std::vector<int> m_ZnbSample;//nb channels
+    std::vector<double> m_Zmin;
+    std::vector<double> m_Zmax;
+    std::vector<unsigned> m_ZnbSample;//nb channels
 
-    std::vector<unsigned> m_chunk_size;
+    std::vector<unsigned long> m_chunk_size;
     std::vector<unsigned> m_mean_span;
 
     std::vector<unsigned> m_stream3Dstate;
     std::vector<unsigned> m_stream2Dstate;
 
+    std::vector<std::vector<bool>> m_channelIsValid;
 
-    std::vector<std::vector<std::vector<float>>> m_data;
+
+    std::vector<std::vector<std::vector<double>>> m_data;
 
     std::vector<QtDataVisualization::Q3DSurface*> m_graph;
     std::vector<QtCharts::QChart *> m_chart2D;

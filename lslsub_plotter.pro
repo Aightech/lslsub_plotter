@@ -46,9 +46,7 @@ LIBS += -L./lib
 
 unix:!macx: LIBS += \
                     -Wl,-rpath,./lib \
-                    -llsl64 \
-                    -lboost_system\
-                    -lboost_thread
+                    -llsl64
 
 
 win32: LIBS +=  -lliblsl32
