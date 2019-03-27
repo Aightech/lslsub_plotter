@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->horizontalSlider_mean_span, SIGNAL (valueChanged(int)), this, SLOT(changeMeanSpan()));
         //init the timer object used to update the graph
     QObject::connect(&m_timer, &QTimer::timeout, this, &MainWindow::handleTimeout);
-    m_timer.setInterval(50);
+    m_timer.setInterval(100);
     m_timer.start();
 
     // Set the colors from the light theme as default ones
@@ -50,8 +50,8 @@ void MainWindow::initDataArray(unsigned index)
     m_Xmax.push_back(1000);
     m_XnbSample.push_back(1000);;//time span
 
-    m_Ymin.push_back(-1);
-    m_Ymax.push_back(1);
+    m_Ymin.push_back(-100);
+    m_Ymax.push_back(100);
 
     m_Zmin.push_back(0);
     m_Zmax.push_back(m_inlet[index]->get_channel_count());
@@ -97,13 +97,14 @@ void MainWindow::create2Dgraph(unsigned index, std::string name)
     QtCharts::QChartView *chartView = new QtCharts::QChartView(m_chart2D[index]);
     chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     chartView->chart()->legend()->hide();
+    chartView->setRenderHint(QPainter::Antialiasing);
     QDockWidget *dock = new QDockWidget(tr("LSL Stream: ")+QString::fromStdString(name),this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     dock->setWidget(chartView);
     dock->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
     dock->setMinimumWidth(800);
     dock->setMinimumHeight(500);
-    dock->setFloating(true);
+    //dock->setFloating(true);
     this->addDockWidget(Qt::RightDockWidgetArea,dock);
 
     //ui->scrollArea_2D->//addWidget(chartView);
@@ -148,7 +149,7 @@ void MainWindow::create3Dgraph(unsigned index, std::string name)
     dock->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
     dock->setMinimumWidth(500);
     dock->setMinimumHeight(500);
-    dock->setFloating(true);
+    //dock->setFloating(true);
     this->addDockWidget(Qt::LeftDockWidgetArea,dock);
 
     m_graph[index]->axisX()->setRange(static_cast<float>(m_Xmin[index]), static_cast<float>(m_Xmax[index]));
@@ -184,13 +185,13 @@ void MainWindow::connect_stream()
         std::string stream_label = m_results[i].name();
         if(isStreamsTicked(stream_label))
         {
-            ui->comboBox_stream->addItem( QString::fromStdString(stream_label), i);
             std::cout << "Trying to connect to \"" << stream_label << "\""<< std::endl;
             std::vector<lsl::stream_info> results = lsl::resolve_stream("name",stream_label);
             m_inlet.push_back(new lsl::stream_inlet(results[0]));
             initDataArray(m_stream_count);
             create3Dgraph(m_stream_count,stream_label);
             create2Dgraph(m_stream_count,stream_label);
+            ui->comboBox_stream->addItem( QString::fromStdString(stream_label), i);
         }
 
         m_stream_count++;
@@ -246,12 +247,18 @@ void MainWindow::storeChunk_int16(unsigned index)
         std::vector<short> sample(chunk[0].size());//mean sample vector
         for(unsigned t = 0; t < m_chunk_size[index]; t++)
         {
+            std::cout << "   ";
             for(unsigned n = 0; n < chunk[t].size(); n++)
+            {
                 sample[n] += chunk[t][n];
+                std::cout << chunk[t][n] << "  ";
+            }
+            std::cout << std::endl;
             m++;
 
             if(m%m_mean_span[index]==0)//if enoight data was summed then divide to obtain the mean
             {
+                std::cout << "-> ";
                 for(unsigned n = 0; n < chunk[t].size(); n++)
                 {
                     sample[n] /= m;
@@ -261,8 +268,10 @@ void MainWindow::storeChunk_int16(unsigned index)
                         m_Ymin[index] = sample[n];
 
                     m_data[index][n][i] = sample[n];
+                    std::cout << m_data[index][n][i] << "  ";
                     sample[n]=0;
                 }
+                std::cout << std::endl;
                 m = 0;
                 i++;
                 i = i%m_XnbSample[index];
@@ -271,13 +280,17 @@ void MainWindow::storeChunk_int16(unsigned index)
         if(m!=0)//if the number of data received was not a multiple of the mean span
         {
             for(unsigned n = 0; n < chunk[0].size(); n++)
+            {
                 m_data[index][n][i] = static_cast<double>(sample[n]/static_cast<float>(m));
+                std::cout <<  m_data[index][n][i] << "  ";
+            }
+            std::cout << std::endl;
             i++;
             i = i%m_XnbSample[index];
         }
         m_counter[index] =i;//increment the counter of the number of new data sampled
         m_graph[index]->axisY()->setRange(static_cast<float>(m_Ymin[index]), static_cast<float>(m_Ymax[index]));//reajust the Y ranges
-        m_chart2D[index]->axes(Qt::Vertical).first()->setRange(m_Ymin[index], m_Ymax[index]);
+        //m_chart2D[index]->axes(Qt::Vertical).first()->setRange(m_Ymin[index], m_Ymax[index]);
     }
 }
 
@@ -305,12 +318,18 @@ void MainWindow::storeChunk_float(unsigned index)
         std::vector<float> sample(chunk[0].size());//mean sample vector
         for(unsigned t = 0; t < m_chunk_size[index]; t++)
         {
+            std::cout << "   ";
             for(unsigned n = 0; n < chunk[t].size(); n++)
+            {
                 sample[n] += chunk[t][n];
+                std::cout << chunk[t][n] << "  ";
+            }
+            std::cout << std::endl;
             m++;
 
             if(m%m_mean_span[index]==0)//if enoight data was summed then divide to obtain the mean
             {
+                std::cout << "-> ";
                 for(unsigned n = 0; n < chunk[t].size(); n++)
                 {
                     sample[n] /= m;
@@ -319,8 +338,10 @@ void MainWindow::storeChunk_float(unsigned index)
                     if(static_cast<double>(sample[n])< m_Ymin[index])
                         m_Ymin[index] = static_cast<double>(sample[n]);
                     m_data[index][n][i] = static_cast<double>(sample[n]);
+                    std::cout << m_data[index][n][i] << "  ";
                     sample[n]=0;
                 }
+                std::cout << std::endl;
                 m = 0;
                 i++;
                 i = i%m_XnbSample[index];
@@ -329,13 +350,17 @@ void MainWindow::storeChunk_float(unsigned index)
         if(m!=0)//if the number of data received was not a multiple of the mean span
         {
             for(unsigned n = 0; n < chunk[0].size(); n++)
+            {
                 m_data[index][n][i] = static_cast<double>(sample[n]/static_cast<float>(m));
+                std::cout << m_data[index][n][i] << "  ";
+            }
+            std::cout << std::endl;
             i++;
             i = i%m_XnbSample[index];
         }
         m_counter[index] =i;//increment the counter of the number of new data sampled
         m_graph[index]->axisY()->setRange(static_cast<float>(m_Ymin[index]), static_cast<float>(m_Ymax[index]));//reajust the Y ranges
-        m_chart2D[index]->axes(Qt::Vertical).first()->setRange(m_Ymin[index], m_Ymax[index]);
+        //m_chart2D[index]->axes(Qt::Vertical).first()->setRange(m_Ymin[index], m_Ymax[index]);
     }
 }
 
@@ -401,32 +426,34 @@ void MainWindow::update2Dgraph(unsigned index)
         {
             for (uint i = 0 ; i < m_ZnbSample[index]; i++)
             {
-                QtCharts::QLineSeries *series = new QtCharts::QLineSeries(m_chart2D[index]);
+                QtCharts::QLineSeries *series = new QtCharts::QLineSeries();
                 for (unsigned int j = 0; j < m_XnbSample[index]; j++)
                 {
                     unsigned long rrb = (j+m_counter[index])%m_XnbSample[index];
                     double x = (j>m_Xmax[index])?m_Xmax[index]:(j<m_Xmin[index])?m_Xmin[index]:j;
                     double y = m_data[index][i][rrb] ;//+ (i==1&&j==3)?m_counter%50:0;
                     y = (m_channelIsValid[index][i]==false)?0:(y>m_Ymax[index])?m_Ymax[index]:(y<m_Ymin[index])?m_Ymin[index]:y;
-                    series->append(QPointF(x,y));
+                    series->append(qreal(x),qreal(y));
                 }
                 series->setName(QString::number(i));
                 m_chart2D[index]->addSeries(series);
+
             }
+            m_chart2D[index]->createDefaultAxes();
             //ui->radioButton_solo->setChecked(false);
         }
         else
         {
             //ui->radioButton_all->setChecked(false);
             unsigned i = static_cast<unsigned>(ui->spinBox_channelNum->value());
-            QtCharts::QLineSeries *series = new QtCharts::QLineSeries(m_chart2D[index]);
+            QtCharts::QSplineSeries *series = new QtCharts::QSplineSeries(m_chart2D[index]);
             for (unsigned  j = 0; j < m_XnbSample[index]; j++)
             {
                 unsigned long rrb = (j+m_counter[index])%m_XnbSample[index];
                 double x = (j>m_Xmax[index])?m_Xmax[index]:(j<m_Xmin[index])?m_Xmin[index]:j;
                 double y = m_data[index][i][rrb] ;//+ (i==1&&j==3)?m_counter%50:0;
                 y = (m_channelIsValid[index][i]==false)?0:(y>m_Ymax[index])?m_Ymax[index]:(y<m_Ymin[index])?m_Ymin[index]:y;
-                series->append(QPointF(x,y));
+                series->append(qreal(x),qreal(y));
             }
             series->setName(QString::number(i));
             m_chart2D[index]->addSeries(series);
@@ -437,6 +464,7 @@ void MainWindow::update2Dgraph(unsigned index)
 void MainWindow::change_stream(int index)
 {
     m_selectedStream=index;
+    updateGUI();
 }
 
 bool MainWindow::isStreamsTicked(std::string name)
@@ -581,14 +609,15 @@ void MainWindow::updateGUI()
         ui->label_meanSpan->setNum(static_cast<int>(m_mean_span[ind]));
         changeHeatMapRange();
     }
-    if(m_stream_count>-1)
+    if(m_stream_count>0)
     {
         for(unsigned i = 0 ; i < static_cast<unsigned>(ui->treeWidget_streams->topLevelItemCount()); i++)
         {
             for (unsigned c=0;c < static_cast<unsigned>(ui->treeWidget_streams->topLevelItem(static_cast<int>(i))->child(1)->childCount()) ;c++)
             {
                 int ind = StreamsIndex(ui->treeWidget_streams->topLevelItem(static_cast<int>(i))->text(0));
-                m_channelIsValid[i][c] = static_cast<bool>(ui->treeWidget_streams->topLevelItem(ind)->child(1)->child(static_cast<int>(c))->checkState(1));
+                m_channelIsValid[i][c] = (ui->treeWidget_streams->topLevelItem(ind)->child(1)->child(static_cast<int>(c))->checkState(1)==2)?true:false;
+                //std::cout << c << " " <<  m_channelIsValid[i][c] << std::endl;
             }
         }
     }

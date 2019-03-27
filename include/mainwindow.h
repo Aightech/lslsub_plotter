@@ -10,6 +10,7 @@
 
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
+#include <QtCharts/QSplineSeries>
 #include <Q3DSurface>
 #include <QMainWindow>
 #include <QtCore/QTimer>
