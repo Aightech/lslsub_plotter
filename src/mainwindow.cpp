@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->horizontalSlider_mean_span, SIGNAL (valueChanged(int)), this, SLOT(changeMeanSpan()));
         //init the timer object used to update the graph
     QObject::connect(&m_timer, &QTimer::timeout, this, &MainWindow::handleTimeout);
-    m_timer.setInterval(100);
+    m_timer.setInterval(10);
     m_timer.start();
 
     // Set the colors from the light theme as default ones

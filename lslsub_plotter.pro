@@ -49,7 +49,7 @@ unix:!macx: LIBS += \
                     -llsl64
 
 
-win32: LIBS +=  -lliblsl32
+win32: LIBS +=  -lliblsl64
 
 
 INCLUDEPATH += include/lsl
