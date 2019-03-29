@@ -23,6 +23,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->groupBox_2D, SIGNAL (clicked()), this, SLOT (updateGUI()));
     connect(ui->radioButton_all, SIGNAL (clicked()), this, SLOT (updateGUI()));
     connect(ui->radioButton_solo, SIGNAL (clicked()), this, SLOT (updateGUI()));
+    connect(ui->radioButton_solo, SIGNAL (clicked()), this, SLOT (updateGUI()));
+    connect(ui->horizontalSlider_YmaxDisp, SIGNAL (valueChanged(int)), this, SLOT (updateGUI()));
+    connect(ui->horizontalSlider_YminDisp, SIGNAL (valueChanged(int)), this, SLOT (updateGUI()));
+
+    connect(ui->spinBox_channelNum, SIGNAL (valueChanged(int)), this, SLOT (updateGUI()));
+    connect(ui->spinBox_heatmapChmax, SIGNAL (valueChanged(int)), this, SLOT (updateGUI()));
+    connect(ui->spinBox_heatmapChmin, SIGNAL (valueChanged(int)), this, SLOT (updateGUI()));
+    connect(ui->spinBox_heatmapZWidthSize, SIGNAL (valueChanged(int)), this, SLOT (updateGUI()));
 
     connect(ui->pushButton_scanStream, SIGNAL (released()), this, SLOT(scanStream()));
     connect(ui->treeWidget_streams, SIGNAL(itemClicked(QTreeWidgetItem *, int)), SLOT(updateGUI()) );
@@ -52,6 +60,8 @@ void MainWindow::initDataArray(unsigned index)
 
     m_Ymin.push_back(-100);
     m_Ymax.push_back(100);
+    m_YminDisp.push_back(-100);
+    m_YmaxDisp.push_back(100);
 
     m_Zmin.push_back(0);
     m_Zmax.push_back(m_inlet[index]->get_channel_count());
@@ -82,7 +92,7 @@ void MainWindow::create2Dgraph(unsigned index, std::string name)
         {
             double x = (j>m_Xmax[index])?m_Xmax[index]:(j<m_Xmin[index])?m_Xmin[index]:j;
             double y = m_data[index][i][j] ;//+ (i==1&&j==3)?m_counter%50:0;
-            y = (y>m_Ymax[index])?m_Ymax[index]:(y<m_Ymin[index])?m_Ymin[index]:y;
+            y = (y>m_Ymax[index])?m_Ymax[index]:(y<m_YminDisp[index])?m_YminDisp[index]:y;
             series->append(QPointF(x,y));
         }
         series->setName(QString::number(i));
@@ -91,8 +101,8 @@ void MainWindow::create2Dgraph(unsigned index, std::string name)
 
     //set up the chart
     m_chart2D[index]->createDefaultAxes();
-    m_chart2D[index]->axes(Qt::Horizontal).first()->setRange(m_Xmin[index], m_Xmax[index]);
-    m_chart2D[index]->axes(Qt::Vertical).first()->setRange(m_Ymin[index], m_Ymax[index]);
+    /*m_chart2D[index]->axes(Qt::Horizontal).first()->setRange(m_Xmin[index], m_Xmax[index]);
+    m_chart2D[index]->axes(Qt::Vertical).first()->setRange(m_Ymin[index], m_Ymax[index]);*/
 
     QtCharts::QChartView *chartView = new QtCharts::QChartView(m_chart2D[index]);
     chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -153,7 +163,7 @@ void MainWindow::create3Dgraph(unsigned index, std::string name)
     this->addDockWidget(Qt::LeftDockWidgetArea,dock);
 
     m_graph[index]->axisX()->setRange(static_cast<float>(m_Xmin[index]), static_cast<float>(m_Xmax[index]));
-    m_graph[index]->axisY()->setRange(static_cast<float>(m_Ymin[index]), static_cast<float>(m_Ymax[index]));
+    m_graph[index]->axisY()->setRange(static_cast<float>(m_YminDisp[index]), static_cast<float>(m_YmaxDisp[index]));
     m_graph[index]->axisZ()->setRange(static_cast<float>(m_Zmin[index]), static_cast<float>(m_Zmax[index]));
     m_graph[index]->addSeries(m_chart3D[index]);
     m_graph[index]->axisX()->setLabelAutoRotation(30);
@@ -289,7 +299,7 @@ void MainWindow::storeChunk_int16(unsigned index)
             i = i%m_XnbSample[index];
         }
         m_counter[index] =i;//increment the counter of the number of new data sampled
-        m_graph[index]->axisY()->setRange(static_cast<float>(m_Ymin[index]), static_cast<float>(m_Ymax[index]));//reajust the Y ranges
+
         //m_chart2D[index]->axes(Qt::Vertical).first()->setRange(m_Ymin[index], m_Ymax[index]);
     }
 }
@@ -359,7 +369,6 @@ void MainWindow::storeChunk_float(unsigned index)
             i = i%m_XnbSample[index];
         }
         m_counter[index] =i;//increment the counter of the number of new data sampled
-        m_graph[index]->axisY()->setRange(static_cast<float>(m_Ymin[index]), static_cast<float>(m_Ymax[index]));//reajust the Y ranges
         //m_chart2D[index]->axes(Qt::Vertical).first()->setRange(m_Ymin[index], m_Ymax[index]);
     }
 }
@@ -382,9 +391,10 @@ void MainWindow::update3Dgraph(unsigned index)
     {
         if(m_stream3Dstate[index]==2)
         {
+            m_graph[index]->axisY()->setRange(static_cast<float>(m_YminDisp[index]), static_cast<float>(m_YmaxDisp[index]));//reajust the Y ranges
             QtDataVisualization::QSurfaceDataArray *dataArray = new QtDataVisualization::QSurfaceDataArray;
             int chmin=ui->spinBox_heatmapChmin->value();
-            int chmax=ui->spinBox_heatmapChmax->value();
+            int chmax=ui->spinBox_heatmapChmax->value()+1;
             int zwidth=ui->spinBox_heatmapZWidthSize->value();
             int xwidth=(chmax-chmin)/zwidth;
             m_graph[index]->axisZ()->setRange(0, zwidth);
@@ -403,7 +413,7 @@ void MainWindow::update3Dgraph(unsigned index)
                     unsigned k = static_cast<unsigned>(chmin + i*xwidth + j);
                     double x = (j>xwidth)?xwidth:(j<0)?0:j;
                     double y = m_data[index][k][rrb];
-                    y = (m_channelIsValid[index][k]==false)?0:(y>m_Ymax[index])?m_Ymax[index]:(y<m_Ymin[index])?m_Ymin[index]:y;
+                    y = (m_channelIsValid[index][k]==false)?0:(y>m_YmaxDisp[index])?m_YmaxDisp[index]:(y<m_YminDisp[index])?m_YminDisp[index]:y;
                     (*newRow)[ind++].setPosition(QVector3D(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
                 }
                 *dataArray << newRow;
@@ -432,7 +442,7 @@ void MainWindow::update2Dgraph(unsigned index)
                     unsigned long rrb = (j+m_counter[index])%m_XnbSample[index];
                     double x = (j>m_Xmax[index])?m_Xmax[index]:(j<m_Xmin[index])?m_Xmin[index]:j;
                     double y = m_data[index][i][rrb] ;//+ (i==1&&j==3)?m_counter%50:0;
-                    y = (m_channelIsValid[index][i]==false)?0:(y>m_Ymax[index])?m_Ymax[index]:(y<m_Ymin[index])?m_Ymin[index]:y;
+                    y = (m_channelIsValid[index][i]==false)?0:(y>m_Ymax[index])?m_Ymax[index]:(y<m_YminDisp[index])?m_YminDisp[index]:y;
                     series->append(qreal(x),qreal(y));
                 }
                 series->setName(QString::number(i));
@@ -452,7 +462,7 @@ void MainWindow::update2Dgraph(unsigned index)
                 unsigned long rrb = (j+m_counter[index])%m_XnbSample[index];
                 double x = (j>m_Xmax[index])?m_Xmax[index]:(j<m_Xmin[index])?m_Xmin[index]:j;
                 double y = m_data[index][i][rrb] ;//+ (i==1&&j==3)?m_counter%50:0;
-                y = (m_channelIsValid[index][i]==false)?0:(y>m_Ymax[index])?m_Ymax[index]:(y<m_Ymin[index])?m_Ymin[index]:y;
+                y = (m_channelIsValid[index][i]==false)?0:(y>m_Ymax[index])?m_Ymax[index]:(y<m_YminDisp[index])?m_YminDisp[index]:y;
                 series->append(qreal(x),qreal(y));
             }
             series->setName(QString::number(i));
@@ -464,6 +474,9 @@ void MainWindow::update2Dgraph(unsigned index)
 void MainWindow::change_stream(int index)
 {
     m_selectedStream=index;
+    ui->horizontalSlider_YminDisp->setValue(static_cast<int>(m_YminDisp[static_cast<unsigned>(index)]));
+    ui->horizontalSlider_YmaxDisp->setValue(static_cast<int>(m_YmaxDisp[static_cast<unsigned>(index)]));
+    changeHeatMapRange();
     updateGUI();
 }
 
@@ -501,7 +514,7 @@ void MainWindow::changeHeatMapRange()
     {
         unsigned ind = static_cast<unsigned>(index);
         ui->spinBox_heatmapChmin->setValue(0);
-        ui->spinBox_heatmapChmax->setValue(static_cast<int>(m_ZnbSample[ind]));
+        ui->spinBox_heatmapChmax->setValue(static_cast<int>(m_ZnbSample[ind])-1);
         unsigned w = static_cast<unsigned>(sqrt(m_ZnbSample[ind]));
         if(m_ZnbSample[ind]%w==0 && w != 0)
             ui->spinBox_heatmapZWidthSize->setValue(static_cast<int>(w));
@@ -607,7 +620,39 @@ void MainWindow::updateGUI()
 
         ui->horizontalSlider_mean_span->setValue(static_cast<int>(m_mean_span[ind]));
         ui->label_meanSpan->setNum(static_cast<int>(m_mean_span[ind]));
-        changeHeatMapRange();
+
+        m_YmaxDisp[ind] = ui->horizontalSlider_YmaxDisp->value();
+        m_YminDisp[ind] = ui->horizontalSlider_YminDisp->value();
+
+        ui->horizontalSlider_YmaxDisp->setMaximum(static_cast<int>(m_Ymax[ind]));
+        ui->horizontalSlider_YmaxDisp->setMinimum(static_cast<int>(m_YminDisp[ind])+1);
+        ui->horizontalSlider_YminDisp->setMaximum(static_cast<int>(m_YmaxDisp[ind])-1);
+        ui->horizontalSlider_YminDisp->setMinimum(static_cast<int>(m_Ymin[ind]));
+
+        ui->label_YmaxDisp->setNum(m_YmaxDisp[ind]);
+        ui->label_YminDisp->setNum(m_YminDisp[ind]);
+
+        if(ui->spinBox_channelNum->value() >= static_cast<int>(m_ZnbSample[ind]))
+            ui->spinBox_channelNum->setValue(static_cast<int>(m_ZnbSample[ind])-1);
+        if(ui->spinBox_channelNum->value() < 0)
+            ui->spinBox_channelNum->setValue(0);
+
+        if(ui->spinBox_heatmapChmax->value() >= static_cast<int>(m_ZnbSample[ind]))
+            ui->spinBox_heatmapChmax->setValue(static_cast<int>(m_ZnbSample[ind])-1);
+        if(ui->spinBox_heatmapChmax->value() <= ui->spinBox_heatmapChmin->value())
+            ui->spinBox_heatmapChmax->setValue(ui->spinBox_heatmapChmin->value()+1);
+
+        if(ui->spinBox_heatmapChmin->value() < 0)
+            ui->spinBox_heatmapChmin->setValue(0);
+        if(ui->spinBox_heatmapChmin->value() >= ui->spinBox_heatmapChmax->value())
+            ui->spinBox_heatmapChmin->setValue(ui->spinBox_heatmapChmax->value()-1);
+
+        if(ui->spinBox_heatmapZWidthSize->value() >= static_cast<int>(m_ZnbSample[ind]))
+            ui->spinBox_heatmapZWidthSize->setValue(static_cast<int>(m_ZnbSample[ind])-1);
+        if(ui->spinBox_heatmapZWidthSize->value() < 1)
+            ui->spinBox_heatmapZWidthSize->setValue(1);
+
+
     }
     if(m_stream_count>0)
     {

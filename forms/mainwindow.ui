@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>658</width>
-    <height>383</height>
+    <height>431</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,6 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QGridLayout" name="gridLayout_6"/>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -156,7 +155,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>10</string>
+                 <string>1</string>
                 </property>
                </widget>
               </item>
@@ -206,7 +205,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>10</string>
+                 <string>1</string>
                 </property>
                </widget>
               </item>
@@ -309,40 +308,29 @@
             <bool>true</bool>
            </property>
            <layout class="QGridLayout" name="gridLayout">
-            <item row="1" column="2">
-             <widget class="QPushButton" name="pushButton_display3D">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
+            <item row="2" column="1" colspan="2">
+             <widget class="QSpinBox" name="spinBox_heatmapZWidthSize">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="text">
-               <string>show</string>
+              <property name="maximum">
+               <number>1000</number>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_26">
+            <item row="1" column="1">
+             <widget class="QLabel" name="label_9">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="font">
-               <font>
-                <underline>true</underline>
-               </font>
-              </property>
               <property name="text">
-               <string>Channel range:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               <string>Z Width size:</string>
               </property>
              </widget>
             </item>
@@ -392,31 +380,128 @@
               </item>
              </layout>
             </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="label_9">
+            <item row="3" column="0" colspan="3">
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <widget class="QLabel" name="label_12">
+                <property name="text">
+                 <string>Y max:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSlider" name="horizontalSlider_YmaxDisp">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimum">
+                 <number>-31000</number>
+                </property>
+                <property name="maximum">
+                 <number>31000</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_YmaxDisp">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="1" column="2">
+             <widget class="QPushButton" name="pushButton_display3D">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>show</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_26">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="font">
+               <font>
+                <underline>true</underline>
+               </font>
+              </property>
               <property name="text">
-               <string>Z Width size:</string>
+               <string>Channel range:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
-            <item row="2" column="1" colspan="2">
-             <widget class="QSpinBox" name="spinBox_heatmapZWidthSize">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximum">
-               <number>1000</number>
-              </property>
-             </widget>
+            <item row="4" column="0" colspan="3">
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <widget class="QLabel" name="label_16">
+                <property name="text">
+                 <string>Y min:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSlider" name="horizontalSlider_YminDisp">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimum">
+                 <number>-31000</number>
+                </property>
+                <property name="maximum">
+                 <number>31000</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_YminDisp">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

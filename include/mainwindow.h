@@ -87,6 +87,8 @@ private:
 
     std::vector<double> m_Ymin;
     std::vector<double> m_Ymax;
+    std::vector<double> m_YminDisp;
+    std::vector<double> m_YmaxDisp;
 
     std::vector<double> m_Zmin;
     std::vector<double> m_Zmax;
