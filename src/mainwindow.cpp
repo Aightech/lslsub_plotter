@@ -442,7 +442,7 @@ void MainWindow::update2Dgraph(unsigned index)
                     unsigned long rrb = (j+m_counter[index])%m_XnbSample[index];
                     double x = (j>m_Xmax[index])?m_Xmax[index]:(j<m_Xmin[index])?m_Xmin[index]:j;
                     double y = m_data[index][i][rrb] ;//+ (i==1&&j==3)?m_counter%50:0;
-                    y = (m_channelIsValid[index][i]==false)?0:(y>m_Ymax[index])?m_Ymax[index]:(y<m_YminDisp[index])?m_YminDisp[index]:y;
+                    y = (m_channelIsValid[index][i]==false)?0:(y>m_YmaxDisp[index])?m_YmaxDisp[index]:(y<m_YminDisp[index])?m_YminDisp[index]:y;
                     series->append(qreal(x),qreal(y));
                 }
                 series->setName(QString::number(i));
