@@ -679,3 +679,4 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
