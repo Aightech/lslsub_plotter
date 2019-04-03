@@ -1,3 +1,10 @@
+/**
+ * \file mainwindow.cpp
+ * \brief TODO.
+ * \author Alexis Devillard
+ * \version 1.0
+ * \date 03 march 2019
+ */
 #include "include/mainwindow.h"
 #include "ui_mainwindow.h"
 

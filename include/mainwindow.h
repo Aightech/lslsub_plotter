@@ -1,6 +1,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+/**
+ * \file mainwindow.h
+ * \brief TODO.
+ * \author Alexis Devillard
+ * \version 1.0
+ * \date 03 march 2019
+ */
+
 #include <QtDataVisualization>
 #include <QSurfaceDataProxy>
 /*#include <QtDataVisualization/Q3DSurface>
