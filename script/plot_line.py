@@ -22,13 +22,12 @@ from pylsl import StreamInlet, resolve_stream
 
 # Number of cols and rows in the table.
 stream_name = sys.argv[1]
-plot_type = sys.argv[2]
-first_ch = int(sys.argv[3])
-nrows = int(sys.argv[4])
-ncols = int(sys.argv[5])
+first_ch = int(sys.argv[2])
+nrows = int(sys.argv[3])
+ncols = int(sys.argv[4])
 
 print("looking for " + stream_name + " stream ...")
-streams = resolve_stream()
+streams = resolve_stream('name', stream_name)
 if(len(streams)==0):
     print("no stream found. Exit.")
     exit(0)
