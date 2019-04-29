@@ -14,6 +14,7 @@ import numpy as np
 import math
 from vispy.util.transforms import ortho
 
+abc = 0
 
 
 # Number of cols and rows in the table.
@@ -32,6 +33,7 @@ inlet = StreamInlet(streams[0])
 
 # Number of signals.
 m = H*W
+
 if(streams[0].channel_count()-first_ch < m):
     print("Error number of channel. Exit.")
     exit(0)
@@ -99,7 +101,7 @@ vec4 jet(float x) {
 void main()
 {
     gl_FragColor = texture2D(u_texture, v_texcoord);
-    gl_FragColor = jet(( gl_FragColor.x/1024 ));
+    gl_FragColor = jet(( gl_FragColor.x ));
 }
 
 """
@@ -108,7 +110,7 @@ void main()
 class Canvas(app.Canvas):
 
     def __init__(self):
-        app.Canvas.__init__(self, keys='interactive', size=((W * 5), (H * 5)))
+        app.Canvas.__init__(self, keys='interactive', size=((W * 100), (H * 100)))
 
         self.program = gloo.Program(VERT_SHADER, FRAG_SHADER)
         self.texture = gloo.Texture2D(img_array, interpolation='linear')
@@ -130,6 +132,7 @@ class Canvas(app.Canvas):
         self._timer = app.Timer('auto', connect=self.update, start=True)
 
         self.show()
+        
 
     def on_resize(self, event):
         width, height = event.physical_size
@@ -150,13 +153,14 @@ class Canvas(app.Canvas):
             [[x, y], [x + w, y], [x, y + h], [x + w, y + h]])
         self.program.bind(gloo.VertexBuffer(data))
 
+        
     def on_draw(self, event):
         gloo.clear(color=True, depth=True)
-        sample, timestamp = inlet.pull_sample()
-        #print(time)
-        if(timestamp):
-            img_array[...] = np.array(sample[first_ch:m]).reshape(W, H)# np.random.uniform(0, 1, (W, H)).astype(np.float32)
         
+        sample, timestamp = inlet.pull_chunk()
+        if(timestamp):
+            img_array[...] = np.array(sample[0][first_ch:m]).reshape(W, H)/1024.
+            
         self.texture.set_data(img_array)
         self.program.draw('triangle_strip')
 
