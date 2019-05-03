@@ -12,3 +12,5 @@
 !/forms/*
 !README.md
 !lslsub_plotter.pro
+!/script
+!/script/*
