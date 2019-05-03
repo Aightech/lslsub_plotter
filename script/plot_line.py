@@ -172,8 +172,7 @@ class Canvas(app.Canvas):
              k=len(sample)
              s = np.array(sample)
              y[:, :-k] = y[:, k:]
-             y[:, -k:] = 0.1*s[:,0:m].transpose()
-
+             y[:, -k:] = s[:,first_ch:first_ch+m].transpose()/32000
              self.program['a_position'].set_data(y.ravel().astype(np.float32))
              self.update()
 

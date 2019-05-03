@@ -159,7 +159,7 @@ class Canvas(app.Canvas):
         
         sample, timestamp = inlet.pull_chunk()
         if(timestamp):
-            img_array[...] = np.array(sample[0][first_ch:m]).reshape(W, H)/1024.
+            img_array[...] = np.array(sample[len(sample)-1][first_ch:first_ch+m]).reshape(W, H)/32000
             
         self.texture.set_data(img_array)
         self.program.draw('triangle_strip')
