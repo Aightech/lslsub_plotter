@@ -35,7 +35,12 @@ void MainWindow::plot_line()
 {
     if(m_results.size() > ui->comboBox_stream->currentIndex())
     {
+#ifdef WIN32
         std::string command = "python script/plot_line.py";
+#else
+        std::string command = "python3 script/plot_line.py";
+#endif
+
         command += " " + m_results[ui->comboBox_stream->currentIndex()].name();
         command += " " + std::to_string(ui->spinBox_heatmapChmin->value());
         if(ui->radioButton_all->isChecked())
@@ -60,7 +65,11 @@ void MainWindow::plot_heatmap()
 {
     if(m_results.size() > ui->comboBox_stream->currentIndex())
     {
+#ifdef WIN32
         std::string command = "python script/plot_heatmap.py";
+#else
+        std::string command = "python3 script/plot_heatmap.py";
+#endif
         command += " " + m_results[ui->comboBox_stream->currentIndex()].name();
         command += " " + std::to_string(ui->spinBox_heatmapChmin->value());
         command += " " + std::to_string(ui->spinBox_heatmapWidth->value());
