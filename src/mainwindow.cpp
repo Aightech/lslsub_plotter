@@ -35,10 +35,18 @@ void MainWindow::plot_line()
 {
     if(m_results.size() > ui->comboBox_stream->currentIndex())
     {
-        std::string command = "python3 script/plot_line.py";
+        std::string command = "python script/plot_line.py";
         command += " " + m_results[ui->comboBox_stream->currentIndex()].name();
-        command += " " + std::to_string(ui->spinBox_lineChannelNum->value());
-        command += " 1 1";
+        command += " " + std::to_string(ui->spinBox_heatmapChmin->value());
+        if(ui->radioButton_all->isChecked())
+        {
+            command += " " + std::to_string(ui->spinBox_heatmapWidth->value());
+            command += " " + std::to_string(ui->spinBox_heatmapHeight->value());
+        }
+        else
+            command += " 1 1";
+        command += " " + std::to_string(ui->spinBox_minVal->value());
+        command += " " + std::to_string(ui->spinBox_maxVal->value());
         command += " &";
         std::cout << command << std::endl;
         char cmd[command.size()+1];
@@ -52,11 +60,13 @@ void MainWindow::plot_heatmap()
 {
     if(m_results.size() > ui->comboBox_stream->currentIndex())
     {
-        std::string command = "python3 script/plot_heatmap.py";
+        std::string command = "python script/plot_heatmap.py";
         command += " " + m_results[ui->comboBox_stream->currentIndex()].name();
         command += " " + std::to_string(ui->spinBox_heatmapChmin->value());
         command += " " + std::to_string(ui->spinBox_heatmapWidth->value());
         command += " " + std::to_string(ui->spinBox_heatmapHeight->value());
+        command += " " + std::to_string(ui->spinBox_minVal->value());
+        command += " " + std::to_string(ui->spinBox_maxVal->value());
         command += " &";
         std::cout << command << std::endl;
         char cmd[command.size()+1];

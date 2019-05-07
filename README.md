@@ -29,3 +29,12 @@ C++ that enables to select and visualize LSL streams.
 ### Windows 10
 #### Requirements
 #### Steps
+install python: https://www.python.org/downloads/
+install pip: https://bootstrap.pypa.io/get-pip.py
+install vispy : in a terminal : pip install vispy
+install PyQt5 : in a terminal : pip install PyQt5
+install pylsl : in a terminal : pip install pylsl
+
+
+
+

@@ -25,6 +25,10 @@ stream_name = sys.argv[1]
 first_ch = int(sys.argv[2])
 nrows = int(sys.argv[3])
 ncols = int(sys.argv[4])
+min = int(sys.argv[5])
+max = int(sys.argv[6])
+a= 2./float(max-min)
+b= 1-a*max 
 
 print("looking for " + stream_name + " stream ...")
 streams = resolve_stream('name', stream_name)
@@ -172,7 +176,7 @@ class Canvas(app.Canvas):
              k=len(sample)
              s = np.array(sample)
              y[:, :-k] = y[:, k:]
-             y[:, -k:] = s[:,first_ch:first_ch+m].transpose()/32000
+             y[:, -k:] = s[:,first_ch:first_ch+m].transpose()*a + b
              self.program['a_position'].set_data(y.ravel().astype(np.float32))
              self.update()
 
