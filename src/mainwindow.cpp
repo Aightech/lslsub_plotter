@@ -8,6 +8,8 @@
 #include "include/mainwindow.h"
 #include "ui_mainwindow.h"
 #include<string>
+#include <fstream>
+#include <sstream>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -22,6 +24,26 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_scanStream, SIGNAL (released()), this, SLOT(scanStream()));
     connect(ui->pushButton_plot_line, SIGNAL (released()), this, SLOT(plot_line()));
     connect(ui->pushButton_plot_heatmap, SIGNAL (released()), this, SLOT(plot_heatmap()));
+
+    std::ifstream source;                    // build a read-Stream
+    source.open("conf.cfg", std::ios_base::in);  // open data
+    if (source)
+    {
+        std::string line;
+        std::getline(source, line);
+        std::istringstream in(line);
+        int a;
+        in >> a;
+        ui->spinBox_minVal->setValue(a);
+        in >> a;
+        ui->spinBox_maxVal->setValue(a);
+        in >> a;
+        ui->spinBox_heatmapChmin->setValue(a);
+        in >> a;
+        ui->spinBox_heatmapWidth->setValue(a);
+        in >> a;
+        ui->spinBox_heatmapHeight->setValue(a);
+    }
 
 
     // Set the colors from the light theme as default ones
@@ -52,6 +74,10 @@ void MainWindow::plot_line()
             command += " 1 1";
         command += " " + std::to_string(ui->spinBox_minVal->value());
         command += " " + std::to_string(ui->spinBox_maxVal->value());
+        if(ui->radioButton_all->isChecked())
+            command += " " + std::to_string(ui->checkBox->isChecked()?0:1);
+        else
+            command += " 1";
         command += " &";
         std::cout << command << std::endl;
         char cmd[command.size()+1];
@@ -136,6 +162,16 @@ void MainWindow::scanStream()
 
 MainWindow::~MainWindow()
 {
+    std::ofstream myfile ("conf.cfg",std::ios::trunc);
+    if (myfile.is_open())
+    {
+        myfile << ui->spinBox_minVal->value() << " ";
+        myfile << ui->spinBox_maxVal->value() << " ";
+        myfile << ui->spinBox_heatmapChmin->value() << " ";
+        myfile << ui->spinBox_heatmapWidth->value() << " ";
+        myfile << ui->spinBox_heatmapHeight->value() << " ";
+    }
+    myfile.close();
     delete ui;
 }
 
