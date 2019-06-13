@@ -16,3 +16,7 @@
 !/script/*
 !/docs
 !/docs/*
+
+/bin/WIN32/Window/*
+!/bin/WIN32/Window/lslsub_plotter.exe
+!/bin/WIN32/Window/liblsl64.dll
