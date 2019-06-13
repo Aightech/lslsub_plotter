@@ -1,17 +1,6 @@
 # lslsub_plotter
 C++ that enables to select and visualize LSL streams.
 
-
-## TODO
-- [X] create repository
-- [ ] read qt doc
-- [ ] make a gui
-- [ ] scan LSL streams
-- [ ] get the streams
-- [ ] plot the stream
-  - [ ] heatmap
-  - [ ] lines
-
 ## Architecture
 ### INPUTS:
 - LSL stream
@@ -22,10 +11,13 @@ C++ that enables to select and visualize LSL streams.
 
 
 ## Installation
-### Ubuntu 18
-#### Requirements
-#### Steps
+### Requirements
+- [Qt](https://www.qt.io/download) (Download and run the installer. Install the last version >5.12)
+### Steps
+- Open the .pro file from Qtcreator.
+- configure it with a x64 architecture compiler
 
+<<<<<<< HEAD
 ### Windows 10
 #### Requirements
 #### Steps
@@ -38,3 +30,5 @@ install pylsl : in a terminal : pip install pylsl
 
 
 
+=======
+>>>>>>> ce080ae08e517320adf24cdee849e370d6169dae

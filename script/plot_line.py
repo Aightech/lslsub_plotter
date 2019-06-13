@@ -25,11 +25,14 @@ stream_name = sys.argv[1]
 first_ch = int(sys.argv[2])
 nrows = int(sys.argv[3])
 ncols = int(sys.argv[4])
+<<<<<<< HEAD
 min_v = int(sys.argv[5])
 max_v = int(sys.argv[6])
 one_plot = int(sys.argv[7])
 a= 2./float(max_v-min_v)
 b= 1-a*max_v 
+=======
+>>>>>>> ce080ae08e517320adf24cdee849e370d6169dae
 
 print("looking for " + stream_name + " stream ...")
 streams = resolve_stream('name', stream_name)
@@ -62,8 +65,11 @@ index = np.c_[np.repeat(np.repeat(np.arange(ncols), nrows), n),
               np.repeat(np.tile(np.arange(nrows), ncols), n),
               np.tile(np.arange(n), m)].astype(np.float32)
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> ce080ae08e517320adf24cdee849e370d6169dae
 VERT_SHADER = """
 #version 120
 
@@ -98,6 +104,7 @@ void main() {
     // Compute the x coordinate from the time index.
     float x = -1 + 2*a_index.z / (u_n-1);
     vec2 position = vec2(x - (1 - 1 / u_scale.x), a_position);
+<<<<<<< HEAD
 """
 if(one_plot):
     VERT_SHADER += """
@@ -116,6 +123,14 @@ else:
 
 VERT_SHADER +=""" 
 // Apply the static subplot transformation + scaling.
+=======
+
+    // Find the affine transformation for the subplots.
+    vec2 a = vec2(1./ncols, 1./nrows)*.9;
+    vec2 b = vec2(-1 + 2*(a_index.x+.5) / ncols,
+                  -1 + 2*(a_index.y+.5) / nrows);
+    // Apply the static subplot transformation + scaling.
+>>>>>>> ce080ae08e517320adf24cdee849e370d6169dae
     gl_Position = vec4(a*u_scale*position+b, 0.0, 1.0);
 
     v_color = vec4(a_color, 1.);
@@ -191,7 +206,11 @@ class Canvas(app.Canvas):
              k=len(sample)
              s = np.array(sample)
              y[:, :-k] = y[:, k:]
+<<<<<<< HEAD
              y[:, -k:] = s[:,first_ch:first_ch+m].transpose()*a + b
+=======
+             y[:, -k:] = s[:,first_ch:first_ch+m].transpose()/32000
+>>>>>>> ce080ae08e517320adf24cdee849e370d6169dae
              self.program['a_position'].set_data(y.ravel().astype(np.float32))
              self.update()
 
