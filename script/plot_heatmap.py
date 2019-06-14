@@ -22,14 +22,11 @@ stream_name = sys.argv[1]
 first_ch = int(sys.argv[2])
 H = int(sys.argv[3])
 W = int(sys.argv[4])
-<<<<<<< HEAD
 min = int(sys.argv[5])
 max = int(sys.argv[6])
 a= 2./float(max-min)
 b= 1-a*max 
 
-=======
->>>>>>> ce080ae08e517320adf24cdee849e370d6169dae
 
 print("looking for " + stream_name + " stream ...")
 streams = resolve_stream('name', stream_name)
@@ -167,11 +164,7 @@ class Canvas(app.Canvas):
         
         sample, timestamp = inlet.pull_chunk()
         if(timestamp):
-<<<<<<< HEAD
             img_array[...] = np.array(sample[len(sample)-1][first_ch:first_ch+m]).reshape(W, H)*a + b
-=======
-            img_array[...] = np.array(sample[len(sample)-1][first_ch:first_ch+m]).reshape(W, H)/32000
->>>>>>> ce080ae08e517320adf24cdee849e370d6169dae
             
         self.texture.set_data(img_array)
         self.program.draw('triangle_strip')

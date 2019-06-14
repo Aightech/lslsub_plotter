@@ -17,6 +17,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    //find the root path of the pluggin
+    char buffer[MAX_PATH];
+    GetModuleFileNameA( NULL, buffer, MAX_PATH );
+    char * c = strstr(buffer, "lslsub_plotter")+15;
+    *c = '\0';
+    root_path = buffer;
+
     this->setDockOptions(AnimatedDocks | AllowTabbedDocks | AllowNestedDocks);
     ui->treeWidget_streams->setColumnCount(2);
     ui->treeWidget_streams->setHeaderLabels(QStringList() << tr("Streams")<< tr("Infos"));
@@ -58,7 +66,7 @@ void MainWindow::plot_line()
     if(m_results.size() > ui->comboBox_stream->currentIndex())
     {
 #ifdef WIN32
-        std::string command = "python script/plot_line.py";
+        std::string command = "cd " + root_path + " && start cmd /k python script/plot_line.py";
 #else
         std::string command = "python3 script/plot_line.py";
 #endif
@@ -78,12 +86,8 @@ void MainWindow::plot_line()
             command += " " + std::to_string(ui->checkBox->isChecked()?0:1);
         else
             command += " 1";
-        command += " &";
         std::cout << command << std::endl;
-        char cmd[command.size()+1];
-        command.copy(cmd,command.size()+1);
-        cmd[command.size()]='\0';
-        std::system(cmd);
+        std::system(command.c_str());
     }
 }
 
@@ -92,7 +96,7 @@ void MainWindow::plot_heatmap()
     if(m_results.size() > ui->comboBox_stream->currentIndex())
     {
 #ifdef WIN32
-        std::string command = "python script/plot_heatmap.py";
+        std::string command = "cd " + root_path + " && start cmd /k python script/plot_heatmap.py";
 #else
         std::string command = "python3 script/plot_heatmap.py";
 #endif
@@ -102,12 +106,8 @@ void MainWindow::plot_heatmap()
         command += " " + std::to_string(ui->spinBox_heatmapHeight->value());
         command += " " + std::to_string(ui->spinBox_minVal->value());
         command += " " + std::to_string(ui->spinBox_maxVal->value());
-        command += " &";
         std::cout << command << std::endl;
-        char cmd[command.size()+1];
-        command.copy(cmd,command.size()+1);
-        cmd[command.size()]='\0';
-        std::system(cmd);
+        std::system(command.c_str());
     }
 }
 
@@ -117,6 +117,7 @@ void MainWindow::scanStream()
     m_results = lsl::resolve_streams();
 
     ui->treeWidget_streams->clear();
+    ui->comboBox_stream->clear();
     for (auto& stream: m_results)
     {
         ui->comboBox_stream->addItem(QString::fromStdString(stream.name()));

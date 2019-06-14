@@ -17,7 +17,6 @@ C++ that enables to select and visualize LSL streams.
 - Open the .pro file from Qtcreator.
 - configure it with a x64 architecture compiler
 
-<<<<<<< HEAD
 ### Windows 10
 #### Requirements
 #### Steps
@@ -28,7 +27,3 @@ install PyQt5 : in a terminal : pip install PyQt5
 install pylsl : in a terminal : pip install pylsl
 
 
-
-
-=======
->>>>>>> ce080ae08e517320adf24cdee849e370d6169dae

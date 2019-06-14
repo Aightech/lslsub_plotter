@@ -66,6 +66,8 @@ private:
             "cf_undefined"     // Can not be transmitted.
            };
 
+    std::string root_path;
+
 
 
 };

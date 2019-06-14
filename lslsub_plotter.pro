@@ -42,10 +42,12 @@ win32:DEPLOY_TARGET = $$shell_quote($$shell_path($${OUT_PWD}/$${DESTDIR}/$${TARG
 
 #warning($${DEPLOY_COMMAND} $${DEPLOY_TARGET})
 
+#QMAKE_PRE_LINK+= $$quote(copy $$shell_path(bin\liblsl64.dll) $$shell_path($${DESTDIR}/))
+
 CONFIG(release, debug|release)
 {
     QMAKE_POST_LINK += $$quote($${DEPLOY_COMMAND} $${DEPLOY_TARGET})
-    QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) copy $$shell_path(lib/liblsl64.dll) $$shell_path($${DESTDIR}/liblsl64.dll))
+    #QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) copy $$shell_path(lib/liblsl64.dll) $$shell_path($${DESTDIR}/liblsl64.dll))
     QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) del Makefile)
     QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) del Makefile.Debug)
     QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) del Makefile.Release)
