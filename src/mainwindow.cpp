@@ -19,11 +19,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     //find the root path of the pluggin
+#ifdef WIN32
     char buffer[MAX_PATH];
     GetModuleFileNameA( NULL, buffer, MAX_PATH );
     char * c = strstr(buffer, "lslsub_plotter")+15;
     *c = '\0';
     root_path = buffer;
+#endif
 
     this->setDockOptions(AnimatedDocks | AllowTabbedDocks | AllowNestedDocks);
     ui->treeWidget_streams->setColumnCount(2);
