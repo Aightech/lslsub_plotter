@@ -40,6 +40,7 @@ win32:TARGET_CUSTOM_EXT = .exe
 win32:DEPLOY_COMMAND = windeployqt
 win32:DEPLOY_TARGET = $$shell_quote($$shell_path($${OUT_PWD}/$${DESTDIR}/$${TARGET}$${TARGET_CUSTOM_EXT}))
 
+unix:DESTDIR = bin/UNIX/Linux
 #warning($${DEPLOY_COMMAND} $${DEPLOY_TARGET})
 
 #QMAKE_PRE_LINK+= $$quote(copy $$shell_path(bin\liblsl64.dll) $$shell_path($${DESTDIR}/))
@@ -65,7 +66,6 @@ unix {
     {
         QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) rm Makefile)
         QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) rm .qmake.stash)
-        QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) rm lslsub_plotter.pro.user)
         QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) rm *.h)
         QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) rm *.cpp)
         QMAKE_POST_LINK += $$quote($$escape_expand(\n\t) rm *.o)
