@@ -12,7 +12,7 @@
 #include <sstream>
 
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(char *path, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent) :
     char * c = strstr(buffer, "lslsub_plotter")+15;
     *c = '\0';
     root_path = buffer;
+#else
+    root_path = path;
 #endif
 
     this->setDockOptions(AnimatedDocks | AllowTabbedDocks | AllowNestedDocks);
