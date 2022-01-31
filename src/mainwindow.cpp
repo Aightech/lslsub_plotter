@@ -90,6 +90,9 @@ void MainWindow::plot_line()
             command += " " + std::to_string(ui->checkBox->isChecked()?0:1);
         else
             command += " 1";
+
+        command += " " + std::to_string(ui->checkBox_scaleAuto->isChecked()?1:0);
+
         std::cout << command << std::endl;
         std::system(command.c_str());
     }

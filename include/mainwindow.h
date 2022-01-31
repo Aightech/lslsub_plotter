@@ -9,17 +9,17 @@
  * \date 03 march 2019
  */
 
-#include <QtDataVisualization>
-#include <QSurfaceDataProxy>
+//#include <QtDataVisualization>
+//#include <QSurfaceDataProxy>
 /*#include <QtDataVisualization/Q3DSurface>
 #include <QtDataVisualization/QSurfaceDataProxy>
 #include <QtDataVisualization/QHeightMapSurfaceDataProxy>
 #include <QtDataVisualization/QSurface3DSeries>*/
 
-#include <QtCharts/QChartView>
-#include <QtCharts/QLineSeries>
-#include <QtCharts/QSplineSeries>
-#include <Q3DSurface>
+//#include <QtCharts/QChartView>
+//#include <QtCharts/QLineSeries>
+//#include <QtCharts/QSplineSeries>
+//#include <Q3DSurface>
 #include <QMainWindow>
 #include <QtCore/QTimer>
 #include <qtreewidget.h>

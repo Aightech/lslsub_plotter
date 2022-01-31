@@ -27,10 +27,12 @@ nrows = int(sys.argv[3])
 ncols = int(sys.argv[4])
 
 min_v = int(sys.argv[5])
-max_v = int(sys.argv[6])
+max_v =  int(sys.argv[6])
 one_plot = int(sys.argv[7])
 a= 2./float(max_v-min_v)
-b= 1-a*max_v 
+b= 1-a*max_v
+
+auto_scale = int(sys.argv[8])
 
 print("looking for " + stream_name + " stream ...")
 streams = resolve_stream('name', stream_name)
@@ -42,15 +44,16 @@ inlet = StreamInlet(streams[0])
 
 # Number of signals.
 m = nrows*ncols
+print(one_plot)
 if(streams[0].channel_count()-first_ch < m):
     print("Error number of channel. Exit.")
     exit(0)
 
 # Number of samples per signal.
-n = 1000
+n = 3000
 
 # Generate the signals as a (m, n) array.
-y = np.random.randn(m, n).astype(np.float32)
+y = np.zeros((m, n)).astype(np.float32)
 
 # Color of each vertex (TODO: make it more efficient by using a GLSL-based
 # color map and the index).
@@ -186,14 +189,26 @@ class Canvas(app.Canvas):
     def on_timer(self, event):
         """Add some data at the end of each signal (real-time signals)."""
         sample, timestamp = inlet.pull_chunk()
-        #print(time)
+        #print(time)0
         if(timestamp):
+             global a, b
+             
              k=len(sample)
              s = np.array(sample)
              y[:, :-k] = y[:, k:]
-             y[:, -k:] = s[:,first_ch:first_ch+m].transpose()*a + b
-             self.program['a_position'].set_data(y.ravel().astype(np.float32))
+             y[:, -k:] = s[:,first_ch:first_ch+m].transpose()
+
+             if(auto_scale==1):
+                 min_v = np.min(y[:,:][0])
+                 max_v = np.max(y[:,:][0])
+                 a= 2./float(max_v-min_v)
+                 b= 1-a*max_v
+             
+             self.program['a_position'].set_data(y.ravel().astype(np.float32)*a + b)
              self.update()
+             if(one_plot):
+                 #print(y[:, :])
+                 print(s[:,first_ch:first_ch+m][0])
 
     def on_draw(self, event):
         gloo.clear()

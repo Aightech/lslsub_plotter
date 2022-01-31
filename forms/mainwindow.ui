@@ -130,7 +130,7 @@
               </sizepolicy>
              </property>
              <property name="minimum">
-              <number>-32000</number>
+              <number>-64000</number>
              </property>
              <property name="maximum">
               <number>64000</number>
@@ -162,13 +162,23 @@
               </sizepolicy>
              </property>
              <property name="minimum">
-              <number>-32000</number>
+              <number>-64000</number>
              </property>
              <property name="maximum">
               <number>64000</number>
              </property>
              <property name="value">
               <number>100</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_scaleAuto">
+             <property name="text">
+              <string>auto</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -320,7 +330,7 @@
                  <string>All</string>
                 </property>
                 <property name="checked">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -348,6 +358,9 @@
                 </property>
                 <property name="text">
                  <string>Solo</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
