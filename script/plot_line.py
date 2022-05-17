@@ -10,6 +10,9 @@ Multiple real-time digital signals with GLSL-based clipping.
 import sys
 from vispy import gloo
 from vispy import app
+from vispy import scene
+from vispy.scene.visuals import Text
+
 import numpy as np
 import math
 
@@ -62,7 +65,6 @@ inlet = StreamInlet(streams[0])
 
 # Number of signals.
 m = nrows*ncols
-print(one_plot)
 if(streams[0].channel_count()-first_ch < m):
     print("Error number of channel. Exit.")
     exit(0)
@@ -218,11 +220,6 @@ class Canvas(app.Canvas):
              t[:-k] = t[k:]
              t[-k:] = timestamp[:]
 
-             if(auto_scale==1):
-                 min_v = np.min(y[:,:][0])
-                 max_v = np.max(y[:,:][0])
-                 a= 2./float(max_v-min_v)
-                 b= 1-a*max_v
 
              y_processed = y.copy()
              if(AC_enabled):
@@ -240,6 +237,7 @@ class Canvas(app.Canvas):
                  low = lowpass_f/nyq
                  sos = sp.signal.butter(order,low, btype='lowpass',output='sos')
                  y_processed = sp.signal.sosfilt(sos, y_processed)
+                 #y_processed[:,:order*4] = y_processed[:,order*4+1]
 
              if(highpass_f!=-1.):
                  high = highpass_f/nyq
@@ -257,13 +255,22 @@ class Canvas(app.Canvas):
                  
             
              if(fft_enabled):
-                 y_processed[:,:int(n/2)+1]=np.abs(sp.fft.rfft(y_processed))[0]/1000
+                 #y_processed[:,:int(n/2)+1]=np.abs(sp.fft.rfft(y_processed))[0]/1000
+                 y_processed[:,::2]= np.abs(sp.fft.rfft(y_processed))[0][:-1]/1000
+                 y_processed[:,1::2]= y_processed[:,::2]
+                 
+
+             if(auto_scale==1):
+                 min_v = np.min(y_processed[:,:][0])
+                 max_v = np.max(y_processed[:,:][0])
+                 a= 2./float(max_v-min_v)
+                 b= 1-a*max_v
              
              self.program['a_position'].set_data(y_processed.ravel().astype(np.float32)*a + b)
              self.update()
              if(one_plot):
-                 #print(y[:, :])
-                 print(s[:,first_ch:first_ch+m][0])
+                 print(y_processed[:, -1])
+                 #print(s[:,first_ch:first_ch+m][0])
 
     def on_draw(self, event):
         gloo.clear()
