@@ -45,6 +45,7 @@ MainWindow::MainWindow(char *path, QWidget *parent) :
         std::getline(source, line);
         std::istringstream in(line);
         int a;
+        double b;
         in >> a;
         ui->spinBox_minVal->setValue(a);
         in >> a;
@@ -55,6 +56,18 @@ MainWindow::MainWindow(char *path, QWidget *parent) :
         ui->spinBox_heatmapWidth->setValue(a);
         in >> a;
         ui->spinBox_heatmapHeight->setValue(a);
+        in >> a;
+        ui->spinBox_n->setValue(a);
+        in >> a;
+        ui->spinBox_order->setValue(a);
+        in >> b;
+        ui->doubleSpinBox_lowpass->setValue(b);
+        in >> b;
+        ui->doubleSpinBox_highpass->setValue(b);
+        in >> b;
+        ui->doubleSpinBox_stopband_low->setValue(b);
+        in >> b;
+        ui->doubleSpinBox__stopband_high->setValue(b);
     }
 
 
@@ -67,7 +80,7 @@ MainWindow::MainWindow(char *path, QWidget *parent) :
 
 void MainWindow::plot_line()
 {
-    if(m_results.size() > ui->comboBox_stream->currentIndex())
+    if(m_results.size() > (unsigned) ui->comboBox_stream->currentIndex())
     {
 #ifdef WIN32
         std::string command = "cd " + root_path + " && start cmd /k python script/plot_line.py";
@@ -92,6 +105,24 @@ void MainWindow::plot_line()
             command += " 1";
 
         command += " " + std::to_string(ui->checkBox_scaleAuto->isChecked()?1:0);
+        command += " " + std::to_string(ui->spinBox_n->value());
+
+        command += " " + std::to_string(ui->checkBox_fft->isChecked()?1:0);
+
+        command += " " + std::to_string(ui->spinBox_order->value());
+        command += " " + std::to_string(ui->checkBox_lowpass->isChecked()?ui->doubleSpinBox_lowpass->value():-1);
+        command += " " + std::to_string(ui->checkBox_highpass->isChecked()?ui->doubleSpinBox_highpass->value():-1);
+        command += " " + std::to_string(ui->checkBox_stopband->isChecked()?ui->doubleSpinBox_stopband_low->value():-1);
+        command += " " + std::to_string(ui->checkBox_stopband->isChecked()?ui->doubleSpinBox__stopband_high->value():-1);
+
+        command += " " + std::to_string(ui->checkBox_AC->isChecked()?1:0);
+        command += " " + std::to_string(ui->checkBox_Rectified->isChecked()?1:0);
+
+        //stream_name first_ch nrows ncols min_v max_v one_plot auto_scale n fft_enabled order lowpass_f highpass_f stopband_low_f stopband_high_f AC_enabled rectified_enabled
+
+        command += " &";
+
+
 
         std::cout << command << std::endl;
         std::system(command.c_str());
@@ -100,7 +131,7 @@ void MainWindow::plot_line()
 
 void MainWindow::plot_heatmap()
 {
-    if(m_results.size() > ui->comboBox_stream->currentIndex())
+    if(m_results.size() > (unsigned) ui->comboBox_stream->currentIndex())
     {
 #ifdef WIN32
         std::string command = "cd " + root_path + " && start cmd /k python script/plot_heatmap.py";
@@ -178,6 +209,12 @@ MainWindow::~MainWindow()
         myfile << ui->spinBox_heatmapChmin->value() << " ";
         myfile << ui->spinBox_heatmapWidth->value() << " ";
         myfile << ui->spinBox_heatmapHeight->value() << " ";
+        myfile << ui->spinBox_n->value() << " ";
+        myfile << ui->spinBox_order->value() << " ";
+        myfile << ui->doubleSpinBox_lowpass->value() << " ";
+        myfile << ui->doubleSpinBox_highpass->value() << " ";
+        myfile << ui->doubleSpinBox_stopband_low->value() << " ";
+        myfile << ui->doubleSpinBox__stopband_high->value() << " ";
     }
     myfile.close();
     delete ui;

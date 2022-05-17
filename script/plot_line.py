@@ -15,6 +15,11 @@ import math
 
 from pylsl import StreamInlet, resolve_stream
 
+import scipy as sp
+from scipy import signal
+from scipy import fft
+from scipy.fft import rfft
+
 
 
 
@@ -33,6 +38,19 @@ a= 2./float(max_v-min_v)
 b= 1-a*max_v
 
 auto_scale = int(sys.argv[8])
+# Number of samples per signal.
+n = int(sys.argv[9])
+fft_enabled = int(sys.argv[10])
+
+order = int(sys.argv[11])
+lowpass_f = float(sys.argv[12])
+highpass_f =float(sys.argv[13])
+stopband_low_f = float(sys.argv[14])
+stopband_high_f = float(sys.argv[15])
+
+AC_enabled = int(sys.argv[16])
+rectified_enabled = int(sys.argv[17])
+
 
 print("looking for " + stream_name + " stream ...")
 streams = resolve_stream('name', stream_name)
@@ -49,11 +67,12 @@ if(streams[0].channel_count()-first_ch < m):
     print("Error number of channel. Exit.")
     exit(0)
 
-# Number of samples per signal.
-n = 3000
+
 
 # Generate the signals as a (m, n) array.
 y = np.zeros((m, n)).astype(np.float32)
+y_processed = np.zeros((m, n)).astype(np.float32)
+t = np.zeros(n).astype(np.float32)
 
 # Color of each vertex (TODO: make it more efficient by using a GLSL-based
 # color map and the index).
@@ -189,7 +208,6 @@ class Canvas(app.Canvas):
     def on_timer(self, event):
         """Add some data at the end of each signal (real-time signals)."""
         sample, timestamp = inlet.pull_chunk()
-        #print(time)0
         if(timestamp):
              global a, b
              
@@ -197,14 +215,51 @@ class Canvas(app.Canvas):
              s = np.array(sample)
              y[:, :-k] = y[:, k:]
              y[:, -k:] = s[:,first_ch:first_ch+m].transpose()
+             t[:-k] = t[k:]
+             t[-k:] = timestamp[:]
 
              if(auto_scale==1):
                  min_v = np.min(y[:,:][0])
                  max_v = np.max(y[:,:][0])
                  a= 2./float(max_v-min_v)
                  b= 1-a*max_v
+
+             y_processed = y.copy()
+             if(AC_enabled):
+                 y_processed = y_processed - np.mean(y_processed)
+            
+             if(t[0]==0):
+                 fs = len(timestamp)/( timestamp[-1]- timestamp[0])
+             else:
+                 fs = len(t)/( t[-1]- t[-0])
+             print("fs:" +str(fs))
              
-             self.program['a_position'].set_data(y.ravel().astype(np.float32)*a + b)
+             nyq = fs/2
+             
+             if(lowpass_f!=-1.):
+                 low = lowpass_f/nyq
+                 sos = sp.signal.butter(order,low, btype='lowpass',output='sos')
+                 y_processed = sp.signal.sosfilt(sos, y_processed)
+
+             if(highpass_f!=-1.):
+                 high = highpass_f/nyq
+                 sos = sp.signal.butter(order,high, btype='highpass',output='sos')
+                 y_processed = sp.signal.sosfilt(sos, y_processed)
+
+             if(stopband_low_f!=-1.):
+                 low = stopband_low_f/nyq
+                 high = stopband_high_f/nyq
+                 sos = sp.signal.butter(order,[low,high], btype='bandstop',output='sos')
+                 y_processed = sp.signal.sosfilt(sos, y_processed)
+                 
+             if(rectified_enabled):
+                 y_processed = np.abs(y_processed)
+                 
+            
+             if(fft_enabled):
+                 y_processed[:,:int(n/2)+1]=np.abs(sp.fft.rfft(y_processed))[0]/1000
+             
+             self.program['a_position'].set_data(y_processed.ravel().astype(np.float32)*a + b)
              self.update()
              if(one_plot):
                  #print(y[:, :])
