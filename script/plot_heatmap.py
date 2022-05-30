@@ -8,6 +8,8 @@
 Illustrate how to plot a 2D function (an image) y=f(x,y) on the GPU.
 """
 import sys
+import vispy
+vispy.use('PyQt6')
 from vispy import app, gloo
 from pylsl import StreamInlet, resolve_stream
 import numpy as np

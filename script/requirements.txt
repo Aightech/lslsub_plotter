@@ -1,0 +1,4 @@
+vispy
+pylsl
+scipy
+pyQt6

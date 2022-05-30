@@ -7,7 +7,10 @@
 """
 Multiple real-time digital signals with GLSL-based clipping.
 """
+
 import sys
+import vispy
+vispy.use('PyQt6')
 from vispy import gloo
 from vispy import app
 from vispy import scene
