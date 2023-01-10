@@ -10,23 +10,32 @@ disp(version);
 disp('Resolving an EEG stream...');
 result = {};
 while isempty(result)
-    result = lsl_resolve_byprop(lib,'type','sample'); end
+    result = lsl_resolve_byprop(lib,'type','measurement'); end
 
 % create a new inlet
 disp('Opening an inlet...');
 inlet = lsl_inlet(result{1});
 
 disp('Now receiving data...');
-figure;
-while true
+%figure; % open a new figure
+sig = zeros(200000,1);
+tt = zeros(200000,1);
+i=1
+while i<200001 
     % get data from the inlet
     [vec,ts] = inlet.pull_sample();
-    % and display it
-    A = reshape(vec, [8,8]);
-    surf(A);
-    
-    zlim([0,800]);
-    pause(0.1);
-    fprintf('%.2f\n',A(1,1));
-%     fprintf('%.5f\n',ts);
+    sig(i)=vec(1);
+    tt(i)=ts;
+    i=i+1
+%     % and display it
+%     A = reshape(vec, [8,8]);
+%     surf(A);
+%     
+%     zlim([0,800]);
+%     pause(0.1);
+%     fprintf('%.2f\n',A(1,1));
+% %     fprintf('%.5f\n',ts);
 end
+
+arr = [tt,sig];
+arr2 = sortrows(arr);

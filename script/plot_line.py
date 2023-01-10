@@ -215,7 +215,6 @@ class Canvas(app.Canvas):
         sample, timestamp = inlet.pull_chunk()
         if(timestamp):
              global a, b
-             
              k=len(sample)
              s = np.array(sample)
              y[:, :-k] = y[:, k:]
@@ -227,11 +226,15 @@ class Canvas(app.Canvas):
              y_processed = y.copy()
              if(AC_enabled):
                  y_processed = y_processed - np.mean(y_processed)
-            
+
+             fs = 1
              if(t[0]==0):
-                 fs = len(timestamp)/( timestamp[-1]- timestamp[0])
+                 if(( timestamp[-1]- timestamp[0]) !=0):
+                     fs = len(timestamp)/( timestamp[-1]- timestamp[0])
              else:
-                 fs = len(t)/( t[-1]- t[-0])
+                 if((t[-1]- t[-0])>0):
+                     fs = len(t)/( t[-1]- t[-0])
+                
              print("fs:" +str(fs))
              
              nyq = fs/2
@@ -264,16 +267,22 @@ class Canvas(app.Canvas):
                  
 
              if(auto_scale==1):
-                 min_v = np.min(y_processed[:,:][0])
-                 max_v = np.max(y_processed[:,:][0])
+                 mean = np.mean(y_processed)
+                 var = np.sqrt(np.var(y_processed))
+                 print(var)
+                 min_v = mean - 0.2*var#np.min(y_processed[:,:][0])
+                 max_v = mean + 0.2*var#np.max(y_processed[:,:][0])
                  a= 2./float(max_v-min_v)
                  b= 1-a*max_v
              
              self.program['a_position'].set_data(y_processed.ravel().astype(np.float32)*a + b)
              self.update()
              if(one_plot):
-                 print(y_processed[:, -1])
-                 #print(s[:,first_ch:first_ch+m][0])
+                 #print(timestamp)
+                 #print(" ", end=' ')
+                 #print(y_processed[:, :])
+                 print(s[:,first_ch:first_ch+m][0])
+             print(s[:,first_ch:first_ch+m][0])
 
     def on_draw(self, event):
         gloo.clear()
