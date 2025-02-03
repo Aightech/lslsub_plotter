@@ -13,6 +13,7 @@ C++ that enables to select and visualize LSL streams.
 ## Installation
 ### Requirements
 - [Qt](https://www.qt.io/download) (Download and run the installer. Install the last version >5.12
+- sudo apt install python3-vispy python3-pyqt5 
 - install vispy : in a terminal : pip install vispy
 - install PyQt5 : in a terminal : pip install PyQt5
 - install pylsl : in a terminal : pip install pylsl
